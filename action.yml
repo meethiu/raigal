@@ -1,0 +1,54 @@
+name: Raigal - AI Code Quality Gate
+description: Run the Raigal quality gate on AI-assisted code (scan + fail CI below threshold from .raigal/config.yml).
+author: raigal
+branding:
+  icon: shield
+  color: green
+
+inputs:
+  directory:
+    description: Directory to scan.
+    required: false
+    default: "."
+  node-version:
+    description: Node.js version to install before running raigal.
+    required: false
+    default: "24"
+  format:
+    description: Output format - "json" (default, CI-friendly) or "human".
+    required: false
+    default: "json"
+  version:
+    description: npm raigal CLI version to run (e.g. "0.16.1"). Defaults to the latest published release. This is separate from the GitHub Action ref in uses:.
+    required: false
+    default: "latest"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Run raigal ci
+      shell: bash
+      env:
+        RAIGAL_FORMAT: ${{ inputs.format }}
+        RAIGAL_VERSION: ${{ inputs.version }}
+        RAIGAL_DIR: ${{ inputs.directory }}
+      run: |
+        scan_dir="$RAIGAL_DIR"
+        if [[ "$scan_dir" != /* ]]; then
+          scan_dir="$GITHUB_WORKSPACE/$scan_dir"
+        fi
+
+        args=("ci" "$scan_dir")
+        if [ "$RAIGAL_FORMAT" = "human" ]; then
+          args+=("--human")
+        fi
+
+        npm_exec_dir="$(mktemp -d)"
+        trap 'rm -rf "$npm_exec_dir"' EXIT
+        cd "$npm_exec_dir"
+        npm exec --yes --package "raigal@${RAIGAL_VERSION}" -- raigal "${args[@]}"
