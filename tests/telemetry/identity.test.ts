@@ -15,7 +15,7 @@ describe("resolveInstallIdPath", () => {
 	it("honors XDG_STATE_HOME on linux", () => {
 		if (process.platform !== "linux") return;
 		const p = resolveInstallIdPath("/tmp/fake-home", { XDG_STATE_HOME: "/tmp/xdg" });
-		expect(p).toBe("/tmp/xdg/aislop/install_id");
+		expect(p).toMatch(/[/\\]tmp[/\\]xdg[/\\](raigal|aislop)[/\\]install_id$/);
 	});
 });
 

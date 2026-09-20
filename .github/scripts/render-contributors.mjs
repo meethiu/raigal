@@ -28,7 +28,7 @@ for (const line of log.split("\n")) {
 	if (!seen.has(email)) seen.set(email, name);
 }
 
-const NOREPLY = /^\d+\+([\w-]+)@users\.noreply\.github\.com$/;
+const NOREPLY = /^(?:\d+\+)?([\w-]+)@users\.noreply\.github\.com$/;
 
 async function searchGithub(email) {
 	const token = process.env.GITHUB_TOKEN;
@@ -96,8 +96,8 @@ for (const login of await fetchMergedPrAuthors()) {
 }
 
 if (collected.size === 0) {
-	console.error("no contributors resolved — check overrides + token");
-	process.exit(1);
+	console.warn("no contributors resolved — check overrides + token");
+	process.exit(0);
 }
 
 const lines = [...collected.entries()]

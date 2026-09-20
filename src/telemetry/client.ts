@@ -5,13 +5,8 @@ import { ensureInstallId, resolveInstallIdPath } from "./identity.js";
 import { redactProperties } from "./redaction.js";
 
 const POSTHOG_HOST =
-	process.env.RAIGAL_POSTHOG_HOST ??
-	process.env.AISLOP_POSTHOG_HOST ??
-	"https://eu.i.posthog.com";
-const POSTHOG_KEY =
-	process.env.RAIGAL_POSTHOG_KEY ??
-	process.env.AISLOP_POSTHOG_KEY ??
-	"";
+	process.env.RAIGAL_POSTHOG_HOST ?? process.env.AISLOP_POSTHOG_HOST ?? "https://eu.i.posthog.com";
+const POSTHOG_KEY = process.env.RAIGAL_POSTHOG_KEY ?? process.env.AISLOP_POSTHOG_KEY ?? "";
 const SCHEMA_VERSION = "v2";
 const REQUEST_TIMEOUT_MS = 3000;
 
@@ -42,8 +37,7 @@ export const isTelemetryDisabled = (config?: TelemetryConfig): boolean => {
 };
 
 const isDebug = (): boolean =>
-	process.env.RAIGAL_TELEMETRY_DEBUG === "1" ||
-	process.env.AISLOP_TELEMETRY_DEBUG === "1";
+	process.env.RAIGAL_TELEMETRY_DEBUG === "1" || process.env.AISLOP_TELEMETRY_DEBUG === "1";
 
 const pendingRequests = new Set<Promise<unknown>>();
 let cachedInstallId: string | null = null;
