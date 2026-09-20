@@ -33,7 +33,7 @@ export const runAstroRaigal = async (options: RaigalAstroOptions = {}): Promise<
 export const runAstroAislop = runAstroRaigal;
 
 const raigalAstro = (options: RaigalAstroOptions = {}): AstroIntegration => ({
-	name: "@scanaislop/astro",
+	name: "@raigal/astro",
 	hooks: {
 		"astro:build:start": async () => {
 			await runAstroRaigal(options);

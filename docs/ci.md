@@ -1,10 +1,10 @@
 # CI / CD
 
-Raigal runs the same gate everywhere. `raigal ci` (or `aislop ci`) scans, prints JSON, and exits non-zero when the score drops below your threshold or any error-severity diagnostic is present. The set-and-forget command is `npx --yes raigal@latest ci`: it always runs the latest published CLI, so there is no version to bump.
+Raigal runs the same gate everywhere. `raigal ci` (or `raigal ci`) scans, prints JSON, and exits non-zero when the score drops below your threshold or any error-severity diagnostic is present. The set-and-forget command is `npx --yes raigal@latest ci`: it always runs the latest published CLI, so there is no version to bump.
 
 ## Fastest path: `raigal init`
 
-Run `npx raigal init` and answer "yes" to the GitHub Actions workflow prompt. It writes `.raigal/config.yml` (or `.aislop/config.yml`) and `.github/workflows/raigal.yml` for you. Commit both and your quality gate is live.
+Run `npx raigal init` and answer "yes" to the GitHub Actions workflow prompt. It writes `.raigal/config.yml` (or `.raigal/config.yml`) and `.github/workflows/raigal.yml` for you. Commit both and your quality gate is live.
 
 `.github/workflows/raigal.yml` is the workflow file (it must live under `.github/workflows/`). `.raigal/config.yml` is the policy file: thresholds, engines, scoring, and telemetry live there.
 
@@ -111,7 +111,7 @@ The base ref must exist in the checkout. With a full clone, `origin/<branch>` wo
 
 ## Quality gate
 
-Set a minimum score in `.raigal/config.yml` (or `.aislop/config.yml`):
+Set a minimum score in `.raigal/config.yml` (or `.raigal/config.yml`):
 
 ```yaml
 ci:

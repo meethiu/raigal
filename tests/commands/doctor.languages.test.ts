@@ -68,7 +68,7 @@ describe("doctor language detection", () => {
 	it("plans the C# tools for a tool-pinned C# project when project evaluation is on", async () => {
 		writeToolPinManifest();
 		writeCsharpProject();
-		writeProjectFile(".aislop/config.yml", "lint:\n  csharp:\n    projectEvaluation: true\n");
+		writeProjectFile(".raigal/config.yml", "lint:\n  csharp:\n    projectEvaluation: true\n");
 
 		const out = await runDoctor();
 
@@ -88,7 +88,7 @@ describe("doctor language detection", () => {
 	it("ignores a JavaScript subtree the config excludes", async () => {
 		writeCsharpProject();
 		writeProjectFile("legacy/app.js", "module.exports = {};\n");
-		writeProjectFile(".aislop/config.yml", "exclude:\n  - legacy/**\n");
+		writeProjectFile(".raigal/config.yml", "exclude:\n  - legacy/**\n");
 
 		const out = await runDoctor();
 
@@ -98,10 +98,10 @@ describe("doctor language detection", () => {
 		expect(out).not.toContain("oxlint");
 	});
 
-	it("ignores a JavaScript subtree .aislopignore excludes", async () => {
+	it("ignores a JavaScript subtree .raigalignore excludes", async () => {
 		writeCsharpProject();
 		writeProjectFile("legacy/app.js", "module.exports = {};\n");
-		writeProjectFile(".aislopignore", "legacy/\n");
+		writeProjectFile(".raigalignore", "legacy/\n");
 
 		const out = await runDoctor();
 

@@ -1,6 +1,6 @@
-# .aislop/config.yml — Relaxed monorepo
+# .raigal/config.yml — Relaxed monorepo
 # Looser thresholds for large codebases or early-stage projects
-# adopting aislop incrementally.
+# adopting raigal incrementally.
 
 version: 1
 

@@ -1,6 +1,6 @@
-# aislop Research Program
+# raigal Research Program
 
-aislop should learn in public.
+raigal should learn in public.
 
 The CLI is the distribution surface, but the moat is the corpus of repeatable AI-code-quality failures we can prove: real open-source repositories, pinned commits, raw JSON scan output, false-positive review, and detector changes that ship with regression tests.
 
@@ -23,8 +23,8 @@ For every public research run:
 2. Pin every repository.
    - Capture `owner/repo`, default branch, commit SHA, primary language, package manager, and whether install/build was attempted.
 3. Pin the scanner.
-   - Capture aislop version, Node version, OS, config file, enabled engines, and command.
-   - Preferred command: `npx aislop@<version> scan . --json`.
+   - Capture raigal version, Node version, OS, config file, enabled engines, and command.
+   - Preferred command: `npx raigal@<version> scan . --json`.
 4. Store raw output.
    - Keep the JSON result for each repo before writing a summary.
    - Never publish private source. Public repos are okay to quote sparingly with links.
@@ -49,7 +49,7 @@ For every public research run:
 - Selection rule:
 - Repositories:
 - Date scanned:
-- aislop version:
+- raigal version:
 - Command:
 
 ## Headline Findings
@@ -93,7 +93,7 @@ Minimum output:
 
 ### 2. Agent Output Benchmark
 
-Run the same tasks across AI coding agents, then score the produced repositories with aislop. The purpose is to answer a question developers already ask: which agents leave the least maintainability debt?
+Run the same tasks across AI coding agents, then score the produced repositories with raigal. The purpose is to answer a question developers already ask: which agents leave the least maintainability debt?
 
 Governance question it answers: which agents are safe enough for which repositories?
 
@@ -102,7 +102,7 @@ Minimum output:
 - task prompt
 - agent/version
 - clean-room run notes
-- aislop score and rule distribution
+- raigal score and rule distribution
 - qualitative code review notes only after the deterministic score
 
 ### 3. Benchmark-to-Rule Translation

@@ -22,7 +22,7 @@ Also available on npm, Yarn, Bun, and Homebrew:
 npm install -g raigal                # npm
 yarn dlx raigal scan                 # Yarn (no install)
 bun add -g raigal                    # Bun
-brew install scanaislop/tap/raigal   # Homebrew
+brew install meethiu/tap/raigal   # Homebrew
 ```
 
 See [Installation](#installation) for every option.
@@ -88,10 +88,10 @@ Package installation does not run dependency lifecycle scripts. After installing
 **Homebrew** (macOS / Linux)
 
 ```bash
-brew install scanaislop/tap/raigal
+brew install meethiu/tap/raigal
 ```
 
-Homebrew installs Node.js as a dependency if it isn't already present. Details: [homebrew-tap](https://github.com/scanaislop/homebrew-tap).
+Homebrew installs Node.js as a dependency if it isn't already present. Details: [homebrew-tap](https://github.com/meethiu/homebrew-tap).
 
 **Python / pipx**
 
@@ -136,7 +136,7 @@ raigal scan --include "src/**"    # only matching paths
 raigal scan --exclude "dist,gen"  # skip extra paths
 ```
 
-**Exclude files**: `node_modules`, `.git`, `dist`, `build`, `coverage` excluded by default. Add more in `.raigal/config.yml` (or `.aislop/config.yml`):
+**Exclude files**: `node_modules`, `.git`, `dist`, `build`, `coverage` excluded by default. Add more in `.raigal/config.yml`:
 
 ```yaml
 exclude:
@@ -169,9 +169,9 @@ const opts = { ...defaults, ...(input || {}) };
 const legacy = doThing(); // raigal-ignore-line
 ```
 
-`raigal-ignore-next-line` covers the line below, `raigal-ignore-line` the line it sits on, and `raigal-ignore-file` (place anywhere in the file) the whole file (legacy `aislop-ignore-*` directives remain supported). Name one or more rules to scope the suppression, or omit them to silence every rule on that line. The directive works in any comment syntax (`//`, `#`, `<!-- -->`). Suppressed findings are removed before scoring, and the run reports how many were silenced.
+`raigal-ignore-next-line` covers the line below, `raigal-ignore-line` the line it sits on, and `raigal-ignore-file` (place anywhere in the file) the whole file. Name one or more rules to scope the suppression, or omit them to silence every rule on that line. The directive works in any comment syntax (`//`, `#`, `<!-- -->`). Suppressed findings are removed before scoring, and the run reports how many were silenced.
 
-**Ignore whole paths**: Add an `.raigalignore` at the project root (same glob semantics as `exclude`, `#` comments allowed; `.aislopignore` is also supported):
+**Ignore whole paths**: Add an `.raigalignore` at the project root (same glob semantics as `exclude`, `#` comments allowed):
 
 ```
 src/generated
@@ -188,7 +188,7 @@ ci:
   failBelow: 80             # override specific keys
 ```
 
-**Editor validation**: Point your editor at the JSON Schema in [`schema/aislop.config.schema.json`](schema/aislop.config.schema.json) for autocomplete and validation of `.raigal/config.yml`. Regenerate it from the source config schema with `pnpm gen:schema`.
+**Editor validation**: Point your editor at the JSON Schema in [`schema/raigal.config.schema.json`](schema/raigal.config.schema.json) for autocomplete and validation of `.raigal/config.yml`. Regenerate it from the source config schema with `pnpm gen:schema`.
 
 ### Fix
 
@@ -298,7 +298,7 @@ Expose Raigal as MCP tools for Claude Desktop, Cursor, Codex:
 }
 ```
 
-**Tools**: `raigal_scan`, `raigal_fix`, `raigal_why`, `raigal_baseline` (legacy `aislop_*` aliases are also registered).
+**Tools**: `raigal_scan`, `raigal_fix`, `raigal_why`, `raigal_baseline`.
 
 ### CI
 
@@ -421,7 +421,7 @@ pipelines:
 
 ### Quality gate
 
-Set minimum score in `.raigal/config.yml` (or `.aislop/config.yml`):
+Set minimum score in `.raigal/config.yml`:
 
 ```yaml
 ci:

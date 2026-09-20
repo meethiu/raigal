@@ -7,15 +7,15 @@ import { ensureInstallId, resolveInstallIdPath } from "../../src/telemetry/ident
 const makeTempHome = () => fs.mkdtempSync(path.join(os.tmpdir(), "aislop-telemetry-"));
 
 describe("resolveInstallIdPath", () => {
-	it("uses ~/.raigal/install_id (or .aislop) by default", () => {
+	it("uses ~/.raigal/install_id by default", () => {
 		const p = resolveInstallIdPath("/tmp/fake-home", {});
-		expect(p).toMatch(/[/\\]\.(raigal|aislop)[/\\]install_id$/);
+		expect(p).toMatch(/[/\\]\.raigal[/\\]install_id$/);
 	});
 
 	it("honors XDG_STATE_HOME on linux", () => {
 		if (process.platform !== "linux") return;
 		const p = resolveInstallIdPath("/tmp/fake-home", { XDG_STATE_HOME: "/tmp/xdg" });
-		expect(p).toMatch(/[/\\]tmp[/\\]xdg[/\\](raigal|aislop)[/\\]install_id$/);
+		expect(p).toBe("/tmp/xdg/raigal/install_id");
 	});
 });
 

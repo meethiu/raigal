@@ -6,10 +6,7 @@
 	"bin": {
 		"raigal": "dist/cli.js",
 		"raigal-mcp": "dist/mcp.js",
-		"raigal-tools": "scripts/install-tools.mjs",
-		"aislop": "dist/cli.js",
-		"aislop-mcp": "dist/mcp.js",
-		"aislop-tools": "scripts/install-tools.mjs"
+		"raigal-tools": "scripts/install-tools.mjs"
 	},
 	"files": [
 		"dist",
@@ -46,7 +43,7 @@
 		"dev": "tsdown --watch",
 		"build": "node --require ./scripts/polyfill.cjs ./node_modules/tsdown/dist/run.mjs",
 		"typecheck": "tsc --noEmit",
-		"gen:schema": "node --experimental-strip-types scripts/gen-config-schema.mjs",
+		"gen:schema": "pnpm build && node scripts/gen-config-schema.mjs",
 		"test": "pnpm build && vitest run",
 		"scan": "pnpm build && node dist/cli.js scan .",
 		"scan:exclude": "pnpm build && node dist/cli.js scan . --exclude .idea --exclude .gitnore --exclude node_modules",
@@ -56,7 +53,6 @@
 	},
 	"keywords": [
 		"raigal",
-		"aislop",
 		"ai-slop",
 		"code-quality",
 		"linter",

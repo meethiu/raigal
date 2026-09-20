@@ -3,12 +3,8 @@ import path from "node:path";
 import { safeProjectFilePath } from "./project-path-safety.js";
 
 export const readRaigalIgnorePatterns = (rootDirectory: string): string[] => {
-	const raigalPath = safeProjectFilePath(path.join(rootDirectory, ".raigalignore"), rootDirectory);
-	const targetPath =
-		raigalPath && fs.existsSync(raigalPath)
-			? raigalPath
-			: safeProjectFilePath(path.join(rootDirectory, ".aislopignore"), rootDirectory);
-	if (!targetPath) return [];
+	const targetPath = safeProjectFilePath(path.join(rootDirectory, ".raigalignore"), rootDirectory);
+	if (!targetPath || !fs.existsSync(targetPath)) return [];
 	try {
 		return fs
 			.readFileSync(targetPath, "utf-8")

@@ -1,4 +1,4 @@
-# .aislop/config.yml: C# / .NET project
+# .raigal/config.yml: C# / .NET project
 #
 # C# support has two layers:
 #   1. Build-free AI-slop rules (ai-slop/csharp-*) and the language-agnostic

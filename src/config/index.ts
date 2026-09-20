@@ -5,7 +5,6 @@ import { loadConfigChain } from "./extends.js";
 import { type AislopConfig, parseConfig } from "./schema.js";
 
 export const CONFIG_DIR = ".raigal";
-export const LEGACY_CONFIG_DIR = ".aislop";
 export const CONFIG_FILE = "config.yml";
 export const RULES_FILE = "rules.yml";
 
@@ -16,10 +15,6 @@ export const findConfigDir = (startDir: string, stopAt?: string): string | null 
 		const candidate = path.join(current, CONFIG_DIR);
 		if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
 			return candidate;
-		}
-		const legacyCandidate = path.join(current, LEGACY_CONFIG_DIR);
-		if (fs.existsSync(legacyCandidate) && fs.statSync(legacyCandidate).isDirectory()) {
-			return legacyCandidate;
 		}
 		if (boundary && current === boundary) break;
 		const parent = path.dirname(current);

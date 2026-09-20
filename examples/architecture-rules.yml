@@ -1,5 +1,5 @@
-# .aislop/rules.yml — Example architecture rules
-# Place in .aislop/rules.yml and enable the architecture engine
+# .raigal/rules.yml — Example architecture rules
+# Place in .raigal/rules.yml and enable the architecture engine
 # in config.yml (engines.architecture: true).
 
 rules:

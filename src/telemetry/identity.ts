@@ -10,25 +10,9 @@ export const resolveInstallIdPath = (
 	env: NodeJS.ProcessEnv = process.env,
 ): string => {
 	if (process.platform === "linux" && env.XDG_STATE_HOME) {
-		const raigalPath = path.join(env.XDG_STATE_HOME, "raigal", FILE_BASENAME);
-		const legacyPath = path.join(env.XDG_STATE_HOME, "aislop", FILE_BASENAME);
-		try {
-			if (fs.existsSync(raigalPath)) return raigalPath;
-			if (fs.existsSync(legacyPath)) return legacyPath;
-		} catch {
-			// ignore permission error
-		}
-		return raigalPath;
+		return path.join(env.XDG_STATE_HOME, "raigal", FILE_BASENAME);
 	}
-	const raigalPath = path.join(homedir, ".raigal", FILE_BASENAME);
-	const legacyPath = path.join(homedir, ".aislop", FILE_BASENAME);
-	try {
-		if (fs.existsSync(raigalPath)) return raigalPath;
-		if (fs.existsSync(legacyPath)) return legacyPath;
-	} catch {
-		// ignore permission error
-	}
-	return raigalPath;
+	return path.join(homedir, ".raigal", FILE_BASENAME);
 };
 
 interface EnsureResult {

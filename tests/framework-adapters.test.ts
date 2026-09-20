@@ -57,7 +57,7 @@ describe("framework adapters", () => {
 		const calls: RaigalRunRequest[] = [];
 		const integration = raigalAstro({ enabled: true, runner: recordingRunner(calls) });
 
-		expect(integration.name).toBe("@scanaislop/astro");
+		expect(integration.name).toBe("@raigal/astro");
 		expect(createAstroRaigalScripts()["raigal:ci"]).toBe("raigal ci");
 
 		await integration.hooks["astro:build:start"]?.();

@@ -1,6 +1,6 @@
 # Scoring
 
-aislop produces a single score from 0 to 100 for every scan.
+raigal produces a single score from 0 to 100 for every scan.
 
 ## How it works
 
@@ -12,11 +12,11 @@ Every diagnostic contributes a weighted penalty based on its severity:
 | Warning | 1.0 |
 | Info | 0.25 |
 
-Penalties are multiplied by the engine weight (configurable in `.aislop/config.yml`).
-They are also multiplied by the rule's impact tier. Run `aislop rules` to see the
+Penalties are multiplied by the engine weight (configurable in `.raigal/config.yml`).
+They are also multiplied by the rule's impact tier. Run `raigal rules` to see the
 impact tier and rationale for each rule.
 
-By default, aislop uses a balanced weighting profile:
+By default, raigal uses a balanced weighting profile:
 
 ```yaml
 scoring:
@@ -43,7 +43,7 @@ Each native rule has an explicit impact tier so scoring is strict only where the
 | `strict` | 1.0 | High-confidence defects, security issues, missing imports, swallowed failures |
 | `standard` | 1.0 | Real quality issues that may still need human judgment |
 | `maintainability` | 0.75 | Refactoring and design debt that should count, but not like a defect |
-| `mechanical` | 0.5 | Cleanup that `aislop fix` or a simple edit can usually handle |
+| `mechanical` | 0.5 | Cleanup that `raigal fix` or a simple edit can usually handle |
 | `style` | 0.5 | Style/policy findings and size/readability pressure |
 | `advisory` | 0.25 | Medium-confidence signals such as hardcoded config values |
 
@@ -123,4 +123,4 @@ ci:
   failBelow: 70
 ```
 
-`aislop ci` exits with code 1 when the score is below the threshold.
+`raigal ci` exits with code 1 when the score is below the threshold.

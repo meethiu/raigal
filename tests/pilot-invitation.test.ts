@@ -30,8 +30,8 @@ const config: AislopConfig = {
 
 const pilotStatePath = (): string =>
 	process.platform === "linux"
-		? path.join(stateHome, "aislop", "pilot_invitation.scans")
-		: path.join(stateHome, ".aislop", "pilot_invitation.scans");
+		? path.join(stateHome, "raigal", "pilot_invitation.scans")
+		: path.join(stateHome, ".raigal", "pilot_invitation.scans");
 
 const runStateWorker = (moduleUrl: string, statePath: string): Promise<number | null> =>
 	new Promise((resolve, reject) => {
@@ -149,22 +149,22 @@ describe("pilot invitation", () => {
 	});
 
 	it("preserves history when an unbranded scan suppresses the invitation", async () => {
-		fs.mkdirSync(path.join(projectDir, ".aislop"));
+		fs.mkdirSync(path.join(projectDir, ".raigal"));
 
 		await runHumanScan({ printBrand: false });
 
-		const history = fs.readFileSync(path.join(projectDir, ".aislop", "history.jsonl"), "utf8");
+		const history = fs.readFileSync(path.join(projectDir, ".raigal", "history.jsonl"), "utf8");
 		expect(history.trim().split("\n")).toHaveLength(1);
 		expect(fs.existsSync(pilotStatePath())).toBe(false);
 	});
 
 	it("preserves history when one-off filters suppress the invitation", async () => {
-		fs.mkdirSync(path.join(projectDir, ".aislop"));
+		fs.mkdirSync(path.join(projectDir, ".raigal"));
 
 		await runHumanScan({ include: ["src/**"] });
 		await runHumanScan({ exclude: ["dist"] });
 
-		const history = fs.readFileSync(path.join(projectDir, ".aislop", "history.jsonl"), "utf8");
+		const history = fs.readFileSync(path.join(projectDir, ".raigal", "history.jsonl"), "utf8");
 		expect(history.trim().split("\n")).toHaveLength(2);
 		expect(fs.existsSync(pilotStatePath())).toBe(false);
 	});

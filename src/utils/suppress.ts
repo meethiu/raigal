@@ -5,8 +5,7 @@ import type { Diagnostic, EngineResult } from "../engines/types.js";
 // Directives are only honored when they appear in an actual comment segment.
 // Inline comments are found by scanning outside common string literal delimiters
 // so text like "https://raigal-ignore-file" cannot hide diagnostics.
-const DIRECTIVE_RE =
-	/^\s*(?:\/\/|\/\*+|#|<!--|\*)\s*(?:raigal|aislop)-ignore-(next-line|line|file)\b([^\n]*)/;
+const DIRECTIVE_RE = /^\s*(?:\/\/|\/\*+|#|<!--|\*)\s*raigal-ignore-(next-line|line|file)\b([^\n]*)/;
 const INLINE_COMMENT_MARKERS = ["//", "/*", "#", "<!--"] as const;
 
 type SuppressScope = "next-line" | "line" | "file";

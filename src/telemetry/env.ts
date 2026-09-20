@@ -48,10 +48,7 @@ const pathLooksHomebrew = (path: string): boolean => {
 	return (
 		normalized.includes("/cellar/raigal/") ||
 		normalized.includes("/cellar/aislop/") ||
-		(normalized.includes("/homebrew/") &&
-			(normalized.includes("/raigal/") || normalized.includes("/aislop/"))) ||
-		(normalized.includes("/opt/homebrew/") &&
-			normalized.includes("/libexec/") &&
+		((normalized.includes("/homebrew/") || normalized.includes("/opt/homebrew/")) &&
 			(normalized.includes("/raigal/") || normalized.includes("/aislop/")))
 	);
 };

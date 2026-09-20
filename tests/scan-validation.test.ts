@@ -94,7 +94,7 @@ describe("loadConfig — invalid config handling", () => {
 	});
 
 	it("returns defaults for invalid YAML and writes warning to stderr", () => {
-		const configDir = path.join(tmpDir, ".aislop");
+		const configDir = path.join(tmpDir, ".raigal");
 		fs.mkdirSync(configDir, { recursive: true });
 		fs.writeFileSync(path.join(configDir, "config.yml"), "invalid: yaml: [[[");
 

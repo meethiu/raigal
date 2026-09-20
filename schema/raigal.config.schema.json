@@ -237,7 +237,7 @@
 					"good": 75,
 					"ok": 50
 				},
-				"smoothing": 20,
+				"smoothing": 5,
 				"maxPerRule": 40
 			},
 			"type": "object",
@@ -277,7 +277,7 @@
 					}
 				},
 				"smoothing": {
-					"default": 20,
+					"default": 5,
 					"type": "number",
 					"minimum": 0
 				},
@@ -357,10 +357,10 @@
 		},
 		"extends": {
 			"type": "string",
-			"description": "Path to a parent .aislop config to extend."
+			"description": "Path to a parent .raigal config to extend."
 		}
 	},
-	"$id": "https://raigal.dev/schema/aislop.config.schema.json",
-	"title": "aislop configuration (.aislop/config.yml)",
-	"description": "Configuration schema for the aislop code-quality CLI."
+	"$id": "https://raigal.dev/schema/raigal.config.schema.json",
+	"title": "raigal configuration (.raigal/config.yml)",
+	"description": "Configuration schema for the raigal code-quality CLI."
 }

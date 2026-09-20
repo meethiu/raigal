@@ -1,6 +1,6 @@
 # Configuration
 
-Run `raigal init` to generate `.raigal/config.yml` (or `.aislop/config.yml` for backwards compatibility) with default values.
+Run `raigal init` to generate `.raigal/config.yml` (or `.raigal/config.yml` for backwards compatibility) with default values.
 
 ## Default config
 
@@ -94,8 +94,8 @@ scoring:
 `extends:` lets a project inherit a parent config and override only the keys it cares about. Useful for org-wide baselines.
 
 ```yaml
-# packages/payments/.aislop/config.yml
-extends: ../../.aislop/base.yml
+# packages/payments/.raigal/config.yml
+extends: ../../.raigal/base.yml
 
 ci:
   failBelow: 80         # override one key, inherit everything else from the parent
@@ -105,7 +105,7 @@ Multiple parents are supported via an array; later entries win on conflict:
 
 ```yaml
 extends:
-  - ../../.aislop/base.yml
+  - ../../.raigal/base.yml
   - ./local-overrides.yml
 ```
 
@@ -118,7 +118,7 @@ extends:
 
 ## Architecture rules
 
-Create `.raigal/rules.yml` (or `.aislop/rules.yml`) to define custom import and path rules. Enable the architecture engine in your config:
+Create `.raigal/rules.yml` (or `.raigal/rules.yml`) to define custom import and path rules. Enable the architecture engine in your config:
 
 ```yaml
 engines:

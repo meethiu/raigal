@@ -1,6 +1,6 @@
 # C++ component pattern
 
-Use this pattern when one cohesive C++ module is too large for aislop's file-size gate, but splitting it into independent `.cpp` files would force internal helpers to become external-linkage API.
+Use this pattern when one cohesive C++ module is too large for raigal's file-size gate, but splitting it into independent `.cpp` files would force internal helpers to become external-linkage API.
 
 The goal is simple: keep small files for agent readability while preserving one translation unit for C++ linkage semantics.
 
@@ -45,7 +45,7 @@ Each fragment starts with a banner, a compile-alone guard, and the internal head
 
 ```cpp
 // Part of the mft component. Included by mft.cpp; do not compile directly.
-#ifndef AISLOP_TU_FRAGMENT
+#ifndef RAIGAL_TU_FRAGMENT
 #error "mft.records.cpp is a fragment included by mft.cpp; do not compile it directly"
 #endif
 
@@ -61,10 +61,10 @@ The owner defines the marker before including fragments:
 ```cpp
 #include "mft.h"
 
-#define AISLOP_TU_FRAGMENT
+#define RAIGAL_TU_FRAGMENT
 #include "mft.records.cpp"
 #include "mft.parse_core.cpp"
-#undef AISLOP_TU_FRAGMENT
+#undef RAIGAL_TU_FRAGMENT
 
 // Public API definitions here.
 ```
@@ -91,7 +91,7 @@ Compile only the owner file. Exclude fragments explicitly:
 
 The `#error` guard is the backstop if a fragment accidentally enters the build.
 
-### aislop
+### raigal
 
 When `complexity/file-too-large` fires on a C/C++ source file, its fix hint points back to this pattern rather than the generic "split into smaller modules" advice.
 
@@ -111,7 +111,7 @@ Applying the pattern is a manual restructuring today (see the recipe below). Opt
 6. Remove private helper declarations from public headers.
 7. Add `<component>.internal.h` declarations only where editor parsing needs them.
 8. Exclude fragments from the build.
-9. Build, then run clang-tidy or aislop to confirm internal-linkage findings are real signal.
+9. Build, then run clang-tidy or raigal to confirm internal-linkage findings are real signal.
 
 ## Residual exceptions
 

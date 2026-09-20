@@ -1,11 +1,11 @@
 # Installation
 
-The same CLI is published to npm, Homebrew, and PyPI. Pick whichever fits your stack — every channel installs the identical `raigal` (with `aislop` backwards-compatibility alias) and `raigal-mcp` commands.
+The same CLI is published to npm, Homebrew, and PyPI. Pick whichever fits your stack — every channel installs the identical `raigal` (with `raigal` backwards-compatibility alias) and `raigal-mcp` commands.
 
 | Channel | Command | Notes |
 |---|---|---|
 | npm / npx | `npx raigal@latest scan` | No install; optional native tools are described below |
-| Homebrew | `brew install scanaislop/tap/raigal` | macOS / Linux; pulls Node as a dependency |
+| Homebrew | `brew install meethiu/tap/raigal` | macOS / Linux; pulls Node as a dependency |
 | Python / pipx | `pipx install raigal` | Isolated env; needs Node on `PATH` |
 
 ## Run without installing
@@ -36,10 +36,10 @@ raigal scan
 
 ## Install from GitHub Packages
 
-The package is also published as `@scanaislop/raigal` on GitHub Packages:
+The package is also published as `@meethiu/raigal` on GitHub Packages:
 
 ```bash
-npm install --save-dev @scanaislop/raigal --registry=https://npm.pkg.github.com
+npm install --save-dev @meethiu/raigal --registry=https://npm.pkg.github.com
 ```
 
 ## Install with Homebrew
@@ -47,17 +47,17 @@ npm install --save-dev @scanaislop/raigal --registry=https://npm.pkg.github.com
 macOS and Linux, via the official tap:
 
 ```bash
-brew install scanaislop/tap/raigal
+brew install meethiu/tap/raigal
 ```
 
 Equivalent two-step form:
 
 ```bash
-brew tap scanaislop/tap
+brew tap meethiu/tap
 brew install raigal
 ```
 
-Homebrew installs Node.js as a runtime dependency if it isn't already present. Upgrade with `brew upgrade raigal`. More: [homebrew-tap](https://github.com/scanaislop/homebrew-tap).
+Homebrew installs Node.js as a runtime dependency if it isn't already present. Upgrade with `brew upgrade raigal`. More: [homebrew-tap](https://github.com/meethiu/homebrew-tap).
 
 ## Install with pipx (Python)
 
@@ -108,7 +108,7 @@ lint:
 
 See the [rules reference](rules.md#c-linting-hybrid-jb--roslynator) for the optional lint setup.
 
-C/C++ tools are system installs that aislop shells out to - they are not bundled. Install them with your system package manager:
+C/C++ tools are system installs that raigal shells out to - they are not bundled. Install them with your system package manager:
 
 ```bash
 # macOS
@@ -124,7 +124,7 @@ scoop install cppcheck llvm
 Notes:
 - `cppcheck` runs on any C/C++ checkout
 - `clang-format` runs only when the repo ships a `.clang-format` file
-- `clang-tidy` runs only when a `compile_commands.json` is present. aislop discovers it in common generated layouts such as `build/`, `build/<Configuration>/`, `out/`, and `cmake-build-*` (including one or more nested subdirectories under those paths).
+- `clang-tidy` runs only when a `compile_commands.json` is present. raigal discovers it in common generated layouts such as `build/`, `build/<Configuration>/`, `out/`, and `cmake-build-*` (including one or more nested subdirectories under those paths).
 
 If your project writes the database outside the repo root, keep that path stable:
 
@@ -133,7 +133,7 @@ cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cmake --build build
 ```
 
-Run `aislop doctor` to see what is available on your system.
+Run `raigal doctor` to see what is available on your system.
 
 ## Requirements
 

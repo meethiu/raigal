@@ -53,7 +53,7 @@ export const runNuxtAislop = runNuxtRaigal;
 
 export const createRaigalNuxtModule = (defaults: RaigalNuxtOptions = {}): NuxtModuleLike => ({
 	meta: {
-		name: "@scanaislop/nuxt",
+		name: "@raigal/nuxt",
 		configKey: "raigal",
 	},
 	defaults: { ...DEFAULTS, ...defaults },

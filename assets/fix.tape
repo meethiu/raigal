@@ -1,4 +1,4 @@
-# aislop fix demo
+# raigal fix demo
 # Run: vhs assets/fix.tape
 
 Output assets/fix.gif

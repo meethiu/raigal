@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { CONFIG_DIR, LEGACY_CONFIG_DIR } from "../config/index.js";
+import { CONFIG_DIR } from "../config/index.js";
 import { APP_VERSION } from "../version.js";
 
 const HISTORY_FILE = "history.jsonl";
@@ -21,8 +21,6 @@ const resolveHistoryDir = (directory: string): string | null => {
 	const resolved = path.resolve(directory);
 	const primary = path.join(resolved, CONFIG_DIR);
 	if (fs.existsSync(primary)) return primary;
-	const legacy = path.join(resolved, LEGACY_CONFIG_DIR);
-	if (fs.existsSync(legacy)) return legacy;
 	return null;
 };
 

@@ -1,4 +1,4 @@
-# .aislop/config.yml — Strict TypeScript project
+# .raigal/config.yml — Strict TypeScript project
 # Tight thresholds for teams that want zero AI slop in production code.
 
 version: 1

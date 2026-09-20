@@ -1,4 +1,4 @@
-# .aislop/config.yml — Python + Go backend
+# .raigal/config.yml — Python + Go backend
 # Tailored for backend services. Disables JS-specific tooling
 # that won't apply.
 

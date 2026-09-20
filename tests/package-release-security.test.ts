@@ -70,9 +70,6 @@ describe("package release security", () => {
 			raigal: "dist/cli.js",
 			"raigal-mcp": "dist/mcp.js",
 			"raigal-tools": "scripts/install-tools.mjs",
-			aislop: "dist/cli.js",
-			"aislop-mcp": "dist/mcp.js",
-			"aislop-tools": "scripts/install-tools.mjs",
 		});
 	});
 

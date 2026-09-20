@@ -47,11 +47,7 @@ const DEFAULT_CLI = "raigal";
 
 const getConfiguredCliPath = (): string => {
 	const raigalInspected = vscode.workspace.getConfiguration("raigal").inspect<string>("path");
-	if (raigalInspected?.globalValue || raigalInspected?.defaultValue) {
-		return raigalInspected.globalValue ?? raigalInspected.defaultValue ?? DEFAULT_CLI;
-	}
-	const aislopInspected = vscode.workspace.getConfiguration("aislop").inspect<string>("path");
-	return aislopInspected?.globalValue ?? aislopInspected?.defaultValue ?? DEFAULT_CLI;
+	return raigalInspected?.globalValue ?? raigalInspected?.defaultValue ?? DEFAULT_CLI;
 };
 
 const isPathLike = (command: string): boolean =>
@@ -251,11 +247,9 @@ export const activate = (context: vscode.ExtensionContext): void => {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("raigal.scanWorkspace", scanWorkspace),
-		vscode.commands.registerCommand("aislop.scanWorkspace", scanWorkspace),
 		vscode.workspace.onDidSaveTextDocument((document) => {
 			const scanOnSave =
-				vscode.workspace.getConfiguration("raigal").get<boolean>("scanOnSave") ??
-				vscode.workspace.getConfiguration("aislop").get<boolean>("scanOnSave", true);
+				vscode.workspace.getConfiguration("raigal").get<boolean>("scanOnSave") ?? true;
 			if (scanOnSave) {
 				scanDocument(document);
 			}

@@ -133,9 +133,9 @@ describe("runScopedScan", () => {
 	it("does not use excluded ambient declarations during a scoped hook scan", async () => {
 		const root = makeTempProject();
 		fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({ name: "project" }));
-		fs.mkdirSync(path.join(root, ".aislop"), { recursive: true });
+		fs.mkdirSync(path.join(root, ".raigal"), { recursive: true });
 		fs.writeFileSync(
-			path.join(root, ".aislop/config.yml"),
+			path.join(root, ".raigal/config.yml"),
 			["version: 1", "exclude:", "  - src/ignored.d.ts"].join("\n"),
 		);
 		fs.mkdirSync(path.join(root, "src"), { recursive: true });
@@ -156,12 +156,12 @@ describe("runScopedScan", () => {
 	it("respects configured include and exclude patterns for changed tests", async () => {
 		const root = makeTempProject();
 		fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({ name: "project" }));
-		fs.mkdirSync(path.join(root, ".aislop"), { recursive: true });
+		fs.mkdirSync(path.join(root, ".raigal"), { recursive: true });
 		fs.writeFileSync(
-			path.join(root, ".aislop/config.yml"),
+			path.join(root, ".raigal/config.yml"),
 			["version: 1", "include:", "  - src", "exclude:", "  - src/ignored.test.ts"].join("\n"),
 		);
-		fs.writeFileSync(path.join(root, ".aislopignore"), "src/also-ignored.test.ts\n");
+		fs.writeFileSync(path.join(root, ".raigalignore"), "src/also-ignored.test.ts\n");
 		fs.mkdirSync(path.join(root, "src"), { recursive: true });
 		const ignoredTest = path.join(root, "src/ignored.test.ts");
 		const alsoIgnoredTest = path.join(root, "src/also-ignored.test.ts");
@@ -179,9 +179,9 @@ describe("runScopedScan", () => {
 	it("respects disabled rule overrides", async () => {
 		const root = makeTempProject();
 		fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({ name: "project" }));
-		fs.mkdirSync(path.join(root, ".aislop"), { recursive: true });
+		fs.mkdirSync(path.join(root, ".raigal"), { recursive: true });
 		fs.writeFileSync(
-			path.join(root, ".aislop/config.yml"),
+			path.join(root, ".raigal/config.yml"),
 			["version: 1", "rules:", "  ai-slop/tautological-test: off"].join("\n"),
 		);
 		fs.mkdirSync(path.join(root, "src"), { recursive: true });

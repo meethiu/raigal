@@ -1,6 +1,6 @@
 # Rules Reference
 
-`aislop` groups checks into six engines. Each engine runs in parallel for speed.
+`raigal` groups checks into six engines. Each engine runs in parallel for speed.
 
 ## Formatting
 
@@ -40,7 +40,7 @@ The C# lint pass is a **hybrid of two independently togglable tools** that both 
 
 Both tools run by default when available: each runs only when it is enabled (both default to on) AND its CLI is installed AND a `.csproj`/`.sln` is present. Missing tooling is silently skipped.
 
-**Restore-evidence gate.** With a solution file at the repo root, the whole solution is analyzed in one pass. Without one, both tools fan out per `.csproj` - and every project costs a full MSBuild workspace load, so aislop only analyzes projects with restore evidence (`project.assets.json`, written by `dotnet restore` or a build, in `obj/` beside the project or in an arcade-style central `artifacts/obj/<ProjectName>/`), capped at 32 projects per scan. Skipped projects are reported once per scan as an advisory `dotnet/projects-skipped` info diagnostic rather than silently dropped. This is the C# analogue of clang-tidy gating on `compile_commands.json`: on a cold checkout the build-backed passes step aside instead of serially burning their timeouts, and the text-tier C# rules still run. `dotnet format` applies the same gate silently.
+**Restore-evidence gate.** With a solution file at the repo root, the whole solution is analyzed in one pass. Without one, both tools fan out per `.csproj` - and every project costs a full MSBuild workspace load, so raigal only analyzes projects with restore evidence (`project.assets.json`, written by `dotnet restore` or a build, in `obj/` beside the project or in an arcade-style central `artifacts/obj/<ProjectName>/`), capped at 32 projects per scan. Skipped projects are reported once per scan as an advisory `dotnet/projects-skipped` info diagnostic rather than silently dropped. This is the C# analogue of clang-tidy gating on `compile_commands.json`: on a cold checkout the build-backed passes step aside instead of serially burning their timeouts, and the text-tier C# rules still run. `dotnet format` applies the same gate silently.
 
 #### jb inspectcode (`jb/*`)
 
@@ -48,7 +48,7 @@ Rules are named `jb/<ReSharper-inspection-id>`, e.g. `jb/RedundantUsingDirective
 
 **Severity mapping:**
 
-| jb severity | aislop severity |
+| jb severity | raigal severity |
 |---|---|
 | ERROR, WARNING | warning |
 | SUGGESTION, HINT | info |
@@ -81,7 +81,7 @@ Shells out to the [`roslynator`](https://github.com/dotnet/roslynator) CLI and r
 dotnet tool install -g roslynator.dotnet.cli
 ```
 
-aislop bundles the AsyncFixer, Meziantou.Analyzer, and IDisposableAnalyzers assemblies so these rules fire even on projects that don't reference them. Where Roslynator reports an accurate async finding, the approximate Phase-1 regex rule (`ai-slop/csharp-async-void` / `ai-slop/csharp-sync-over-async`) at the same line is suppressed so you never see both.
+raigal bundles the AsyncFixer, Meziantou.Analyzer, and IDisposableAnalyzers assemblies so these rules fire even on projects that don't reference them. Where Roslynator reports an accurate async finding, the approximate Phase-1 regex rule (`ai-slop/csharp-async-void` / `ai-slop/csharp-sync-over-async`) at the same line is suppressed so you never see both.
 
 #### De-duplication
 
@@ -134,7 +134,7 @@ cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cmake --build build
 ```
 
-If your CI writes the database in a different subdirectory, keep that directory stable across runs so aislop can find it.
+If your CI writes the database in a different subdirectory, keep that directory stable across runs so raigal can find it.
 
 - **jb inspectcode** (`jb/Cpp*` rules) - ReSharper C++ inspections via the JetBrains CLI, OFF by default (enable with `lint.cpp.jb`). The same `jb` tool used for C# also inspects C++ projects in a loadable solution; it requires Windows + MSVC for the MSBuild project model.
 Findings from all active tools are merged and de-duplicated by `(filePath, line, canonical-rule-id)`. The canonical id collapses jb's clang-tidy-backed inspections (`jb/CppClangTidyBugproneNarrowingConversions`) onto the matching standalone clang-tidy id (`clang-tidy/bugprone-narrowing-conversions`) so the same defect is not double-counted.
@@ -163,9 +163,9 @@ lint:
 | `jbExcludeTypes` | `[]` | jb TypeIds to exclude from C++ results |
 | `jbProjects` | (unset) | Optional `--project` scope for jb's C++ pass |
 
-When both C# and C++ jb are enabled, aislop runs a single inspectcode pass over the union of both project scopes and partitions the results by language.
+When both C# and C++ jb are enabled, raigal runs a single inspectcode pass over the union of both project scopes and partitions the results by language.
 
-Missing tooling is silently skipped; run `aislop doctor` to see what is detected.
+Missing tooling is silently skipped; run `raigal doctor` to see what is detected.
 
 ## Code Quality
 
@@ -191,7 +191,7 @@ Measures structural complexity, finds dead code, and detects unused dependencies
 
 ## AI Slop
 
-The rules that make aislop unique. These catch the patterns AI assistants leave behind.
+The rules that make raigal unique. These catch the patterns AI assistants leave behind.
 
 | Rule | Severity | What it catches |
 |---|---|---|
@@ -312,7 +312,7 @@ Finds secrets, risky constructs, and vulnerable dependencies.
 
 ## Architecture (opt-in)
 
-Custom import and path rules defined in `.aislop/rules.yml`. Enable with `engines.architecture: true` in your config.
+Custom import and path rules defined in `.raigal/rules.yml`. Enable with `engines.architecture: true` in your config.
 
 | Rule type | Example |
 |---|---|

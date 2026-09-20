@@ -1,4 +1,4 @@
-# aislop scan demo
+# raigal scan demo
 # Run: vhs assets/scan.tape
 
 Output assets/scan.gif

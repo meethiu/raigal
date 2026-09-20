@@ -4,9 +4,8 @@ import { detectInstallChannel, isCiEnv } from "./env.js";
 import { ensureInstallId, resolveInstallIdPath } from "./identity.js";
 import { redactProperties } from "./redaction.js";
 
-const POSTHOG_HOST =
-	process.env.RAIGAL_POSTHOG_HOST ?? process.env.AISLOP_POSTHOG_HOST ?? "https://eu.i.posthog.com";
-const POSTHOG_KEY = process.env.RAIGAL_POSTHOG_KEY ?? process.env.AISLOP_POSTHOG_KEY ?? "";
+const POSTHOG_HOST = process.env.RAIGAL_POSTHOG_HOST ?? "https://eu.i.posthog.com";
+const POSTHOG_KEY = process.env.RAIGAL_POSTHOG_KEY ?? "";
 const SCHEMA_VERSION = "v2";
 const REQUEST_TIMEOUT_MS = 3000;
 
@@ -86,7 +85,10 @@ export const track = (input: TrackInput): TrackResult => {
 		}
 	}
 
-	if (process.env.AISLOP_TELEMETRY_DRY_RUN === "1") {
+	if (
+		process.env.RAIGAL_TELEMETRY_DRY_RUN === "1" ||
+		process.env.AISLOP_TELEMETRY_DRY_RUN === "1"
+	) {
 		return { installCreated };
 	}
 

@@ -348,18 +348,18 @@ describe("source file selection", () => {
 		);
 	});
 
-	it("reads .aislopignore patterns, skipping blanks and comments", () => {
-		createFile(tmpDir, ".aislopignore", "# generated code\nlegacy\n\nsrc/api.generated.ts\n");
+	it("reads .raigalignore patterns, skipping blanks and comments", () => {
+		createFile(tmpDir, ".raigalignore", "# generated code\nlegacy\n\nsrc/api.generated.ts\n");
 
 		expect(readAislopIgnorePatterns(tmpDir)).toEqual(["legacy", "src/api.generated.ts"]);
 	});
 
-	it.runIf(process.platform !== "win32")("does not follow a symlinked .aislopignore", () => {
+	it.runIf(process.platform !== "win32")("does not follow a symlinked .raigalignore", () => {
 		const outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), "aislop-ignore-outside-"));
 		try {
 			const outsideFile = path.join(outsideDir, "ignore");
 			fs.writeFileSync(outsideFile, "src/**\n", "utf-8");
-			fs.symlinkSync(outsideFile, path.join(tmpDir, ".aislopignore"));
+			fs.symlinkSync(outsideFile, path.join(tmpDir, ".raigalignore"));
 
 			expect(readAislopIgnorePatterns(tmpDir)).toEqual([]);
 		} finally {
@@ -367,8 +367,8 @@ describe("source file selection", () => {
 		}
 	});
 
-	it("excludes files matched by .aislopignore patterns", () => {
-		createFile(tmpDir, ".aislopignore", "legacy\nsrc/api.generated.ts\n");
+	it("excludes files matched by .raigalignore patterns", () => {
+		createFile(tmpDir, ".raigalignore", "legacy\nsrc/api.generated.ts\n");
 		createFile(tmpDir, "src/app.ts", "export const app = true;\n");
 		createFile(tmpDir, "legacy/old.ts", "export const old = true;\n");
 		createFile(tmpDir, "src/api.generated.ts", "export const gen = true;\n");

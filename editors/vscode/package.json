@@ -20,10 +20,6 @@
       {
         "command": "raigal.scanWorkspace",
         "title": "Raigal: Scan Workspace"
-      },
-      {
-        "command": "aislop.scanWorkspace",
-        "title": "aislop: Scan Workspace (legacy)"
       }
     ],
     "configuration": {

@@ -1,11 +1,11 @@
 # OSS Benchmarking
 
-`aislop`'s false-positive pass is easiest to keep disciplined when the cohort is frozen and every iteration re-runs the exact same repos.
+`raigal`'s false-positive pass is easiest to keep disciplined when the cohort is frozen and every iteration re-runs the exact same repos.
 
 The benchmark harness in `tools/oss-benchmark.mjs` does two separate jobs:
 
 1. Capture the current GitHub Trending top repos for each language into a cohort manifest.
-2. Clone or update those repos, then run `aislop` against each one with telemetry disabled and CI-style deterministic output.
+2. Clone or update those repos, then run `raigal` against each one with telemetry disabled and CI-style deterministic output.
 
 ## Default cohort
 
@@ -26,7 +26,7 @@ Default limit is `10` repos per language.
 Every benchmark scan uses this exact invocation:
 
 ```bash
-AISLOP_NO_TELEMETRY=1 DO_NOT_TRACK=1 CI=1 NO_COLOR=1 node dist/cli.js scan "<repo>" --json
+RAIGAL_NO_TELEMETRY=1 DO_NOT_TRACK=1 CI=1 NO_COLOR=1 node dist/cli.js scan "<repo>" --json
 ```
 
 That keeps telemetry fully off, disables ANSI noise, and makes the output stable for overnight cohort runs.

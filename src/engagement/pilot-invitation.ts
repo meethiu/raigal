@@ -13,9 +13,9 @@ const resolvePilotInvitationStatePath = (
 	env: NodeJS.ProcessEnv = process.env,
 ): string => {
 	if (process.platform === "linux" && env.XDG_STATE_HOME) {
-		return path.join(env.XDG_STATE_HOME, "aislop", STATE_BASENAME);
+		return path.join(env.XDG_STATE_HOME, "raigal", STATE_BASENAME);
 	}
-	return path.join(homedir, ".aislop", STATE_BASENAME);
+	return path.join(homedir, ".raigal", STATE_BASENAME);
 };
 
 const readCounter = (fileDescriptor: number, size: number): string => {
