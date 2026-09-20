@@ -91,7 +91,7 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: aislop ci
+      - name: raigal ci
         run: node dist/cli.js ci .
 
   dotnet-lint:
