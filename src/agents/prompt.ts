@@ -69,7 +69,7 @@ export const buildRepairPrompt = (input: {
 	const lines: string[] = [
 		"You are repairing AI slop findings in a local git worktree.",
 		"",
-		`Current aislop score: ${input.score == null ? "not scored" : `${input.score}/100`}`,
+		`Current raigal score: ${input.score == null ? "not scored" : `${input.score}/100`}`,
 		`Target score: ${input.targetScore}/100`,
 		`Turn budget: ${input.maxTurns}`,
 		"",
@@ -81,7 +81,7 @@ export const buildRepairPrompt = (input: {
 		"- If a finding looks like a false positive, leave the code alone and mention it in your final summary.",
 		"- Run the relevant local verification command if it is obvious and cheap.",
 		"",
-		"aislop findings to repair:",
+		"raigal findings to repair:",
 		"",
 	];
 

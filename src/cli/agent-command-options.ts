@@ -55,7 +55,7 @@ const AGENT_OPTIONS: AgentOption[] = [
 	{
 		flag: "--commit-message <message>",
 		description: "commit message for --commit or --pr",
-		defaultValue: "chore(aislop): repair AI slop findings",
+		defaultValue: "chore(raigal): repair AI slop findings",
 	},
 	{ flag: "--title <title>", description: "pull request title for --pr" },
 	{ flag: "--ready", description: "open a ready-for-review PR instead of a draft" },
@@ -257,7 +257,7 @@ export const agentOptionsFromFlags = (flags: AgentFlags, command: Command): Agen
 	pr: Boolean(flags.pr),
 	branch: flags.branch,
 	base: flags.base,
-	commitMessage: flags.commitMessage ?? "chore(aislop): repair AI slop findings",
+	commitMessage: flags.commitMessage ?? "chore(raigal): repair AI slop findings",
 	prTitle: flags.title,
 	ready: Boolean(flags.ready),
 	keepWorktree: flags.keepWorktree !== false,

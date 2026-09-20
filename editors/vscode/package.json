@@ -3,7 +3,7 @@
   "displayName": "Raigal",
   "description": "Surface Raigal code-quality findings as diagnostics in VS Code by shelling out to your installed Raigal CLI.",
   "version": "0.1.0",
-  "publisher": "scanaislop",
+  "publisher": "Raigal",
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"

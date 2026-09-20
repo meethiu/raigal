@@ -110,6 +110,6 @@ export const agentConnectCommand = async (
 		return;
 	}
 	log.success(`${selected.provider.label} connect command finished.`);
-	log.muted("Run `aislop agent providers` to inspect local provider status.");
-	log.muted(`Set it as the repo default with \`aislop agent use ${selected.provider.id}\`.`);
+	log.muted("Run `raigal agent providers` to inspect local provider status.");
+	log.muted(`Set it as the repo default with \`raigal agent use ${selected.provider.id}\`.`);
 };

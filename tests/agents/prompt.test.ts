@@ -44,7 +44,7 @@ describe("agent repair prompt", () => {
 		});
 
 		expect(prompt).toContain("local git worktree");
-		expect(prompt).toContain("Current aislop score: 82/100");
+		expect(prompt).toContain("Current raigal score: 82/100");
 		expect(prompt).toContain("Target score: 90/100");
 		expect(prompt).toContain("Do not delete tests");
 		expect(prompt).toContain("If a finding looks like a false positive");

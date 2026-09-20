@@ -62,6 +62,3 @@ npm i -g aislop@{{ version }}
 ```bash
 npx aislop {{ subcommand }} {{ verb }}   # {{ what it does }}
 npx aislop {{ subcommand }} {{ verb }}   # {{ what it does }}
-```
-
-Docs: https://scanaislop.com/docs/{{ page }}
