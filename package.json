@@ -1,7 +1,7 @@
 {
 	"name": "raigal",
 	"version": "0.16.1",
-	"description": "Catch the slop AI coding agents leave in your code: narrative comments, swallowed exceptions, as-any casts, dead code, oversized functions. 50+ rules across 10 language targets (TypeScript, JavaScript, Expo / React Native, Python, Go, Rust, Ruby, PHP, C#, C/C++). Sub-second, deterministic, no LLM at runtime. MIT-licensed.",
+	"description": "Catch the slop AI coding agents leave in your code: narrative comments, swallowed exceptions, as-any casts, dead code, oversized functions. 50+ rules across 10 language targets (TypeScript, JavaScript, Expo / React Native, Python, Go, Rust, Ruby, PHP, C#, C/C++). Sub-second, deterministic, no LLM at runtime.",
 	"type": "module",
 	"bin": {
 		"raigal": "dist/cli.js",
@@ -49,6 +49,8 @@
 		"scan:exclude": "pnpm build && node dist/cli.js scan . --exclude .idea --exclude .gitnore --exclude node_modules",
 		"scan:include": "pnpm build && node dist/cli.js scan . --include src --include tests",
 		"scan:json": "pnpm build && node dist/cli.js scan . --json",
+		"check:licenses": "node scripts/check-licenses.mjs",
+		"release:guard": "node scripts/release-guard.mjs",
 		"quality": "pnpm typecheck && pnpm test && node dist/cli.js scan . --json"
 	},
 	"keywords": [
@@ -77,7 +79,7 @@
 		"name": "Kenny Olawuwo",
 		"url": "https://raigal.dev"
 	},
-	"license": "MIT",
+	"license": "SEE LICENSE IN LICENSE",
 	"homepage": "https://raigal.dev",
 	"repository": {
 		"type": "git",

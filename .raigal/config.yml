@@ -9,6 +9,7 @@ exclude:
   - build
   - coverage
   - editors
+  - src/cloud/contract.ts
 
 engines:
   format: true

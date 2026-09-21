@@ -2,27 +2,33 @@
 
 **Catch the slop AI coding agents leave in your code.**
 
-[![npm version](https://img.shields.io/npm/v/raigal.svg)](https://www.npmjs.com/package/raigal) [![npm downloads](https://img.shields.io/npm/dm/raigal.svg)](https://www.npmjs.com/package/raigal) [![CI](https://github.com/meethiu/raigal/actions/workflows/ci.yml/badge.svg)](https://github.com/meethiu/raigal/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Node >= 20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/Mzz4A6mfj6)
+[![npm version](https://img.shields.io/npm/v/raigal.svg)](https://www.npmjs.com/package/raigal) [![npm downloads](https://img.shields.io/npm/dm/raigal.svg)](https://www.npmjs.com/package/raigal) [![CI](https://github.com/meethiu/raigal/actions/workflows/ci.yml/badge.svg)](https://github.com/meethiu/raigal/actions/workflows/ci.yml) [![Node >= 20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/Mzz4A6mfj6)
 
 The patterns Claude Code, Cursor, Codex, and OpenCode leave behind: narrative comments above self-explanatory code, swallowed exceptions, hidden fallbacks, `as any` casts, hallucinated imports, duplicated helpers, dead code, todo stubs, oversized functions. Tests pass. Lint passes. The code rots anyway.
 
-Raigal catches them. 50+ rules across 10 language targets (TypeScript, JavaScript, Expo / React Native, Python, Go, Rust, Ruby, PHP, C#, C/C++). Scores every change 0-100. Sub-second. Deterministic: no LLM in the runtime path, same code in, same score out. MIT-licensed, free CLI.
+Raigal catches them. 50+ rules across 10 language targets (TypeScript, JavaScript, Expo / React Native, Python, Go, Rust, Ruby, PHP, C#, C/C++). Scores every change 0-100. Sub-second. Deterministic: no LLM in the runtime path, same code in, same score out.
 
 ## Quick start
 
+Raigal is proprietary software licensed to organizations on an admin-managed allowlist. Runs require authentication via organization credentials (`raigal login` or `RAIGAL_TOKEN`).
+
 ```bash
-npx raigal@latest scan
+# 1. Sign in with your organization account
+raigal login
+
+# 2. Score your repository
+raigal scan
 ```
 
-No install needed. Works on any project. Get your score in seconds.
+In CI and automated workflows, provide your organization API key via the `RAIGAL_TOKEN` environment variable.
 
 Also available on npm, Yarn, Bun, and Homebrew:
 
 ```bash
 npm install -g raigal                # npm
-yarn dlx raigal scan                 # Yarn (no install)
+yarn dlx raigal scan                 # Yarn
 bun add -g raigal                    # Bun
-brew install meethiu/tap/raigal   # Homebrew
+brew install meethiu/tap/raigal      # Homebrew
 ```
 
 See [Installation](#installation) for every option.
@@ -359,34 +365,31 @@ repos:
 
 ### GitHub Actions
 
-Run `raigal init` and accept the workflow prompt, or add manually. The self-contained form always runs the latest CLI, so there's nothing to bump:
+Add `.github/workflows/raigal.yml` to your repository. Provide your organization token via the `RAIGAL_TOKEN` secret. Setting `id-token: write` enables GitHub OIDC verification so the server can verify the repository owner:
 
 ```yaml
 name: raigal
-
 on:
   pull_request:
   push:
     branches: [main]
-
+permissions:
+  contents: read
+  id-token: write
 jobs:
-  quality-gate:
+  raigal:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Raigal Quality Gate
         run: npx --yes raigal@latest ci
-```
-
-Prefer the Marketplace Action? `@v1` tracks the latest release and `version: latest` keeps the CLI current.
-
-```yaml
-- uses: actions/checkout@v4
-- uses: meethiu/raigal@v1
-  with:
-    version: latest
+        env:
+          RAIGAL_TOKEN: ${{ secrets.RAIGAL_TOKEN }}
 ```
 
 **GitHub code scanning (SARIF)**: emit a SARIF 2.1.0 report and upload it so findings appear in the Security tab:
@@ -441,7 +444,7 @@ ci:
 - Dashboards and agent attribution
 - Visual rules manager
 
-Same engines, same scores. CLI is MIT-licensed. [Learn more](https://raigal.dev)
+Same engines, same scores. Central policy and audit. [Learn more](https://raigal.dev)
 
 ---
 
@@ -452,7 +455,7 @@ AI coding tools generate code that compiles and passes tests but ships with patt
 - **One score**: 0-100, enforced in CI. Weighted so sloppy patterns hit harder than style noise.
 - **Auto-fix first**: Clears formatters, unused imports, dead code mechanically. Hands off the rest to your agent with full context.
 - **Deterministic**: Regex + AST + standard tooling. No LLMs, no API calls. Same code in, same score out.
-- **Zero-config start**: `npx raigal@latest scan` works on any repo. Add `.raigal/config.yml` to tune.
+- **Fast onboarding**: Runs with your organization session (`raigal login`) or CI token (`RAIGAL_TOKEN`). Add `.raigal/config.yml` to tune.
 
 ## What it catches
 
@@ -503,4 +506,4 @@ Auto-updated by `.github/workflows/contributors.yml`. [Link commit email](https:
 
 ## License
 
-[MIT](LICENSE)
+Proprietary. All rights reserved. Use is permitted only under a written agreement with Raigal. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

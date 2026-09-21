@@ -291,6 +291,6 @@ If you submit a PR with a personal email and want to be credited without exposin
 
 ---
 
-## License
+## Contributor Agreement
 
-By contributing you agree that your contributions will be licensed under the [MIT License](LICENSE).
+Raigal is proprietary software. By contributing, you agree to execute the Raigal Contributor License Agreement (CLA) assigning or licensing your contributions for inclusion in the proprietary codebase. See [LICENSE](LICENSE) for details.

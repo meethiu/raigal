@@ -21,6 +21,7 @@ export default defineConfig([
 			VERSION: process.env.VERSION ?? packageJson.version,
 		},
 		fixedExtension: false,
+		sourcemap: false,
 		banner: "#!/usr/bin/env node",
 	},
 	{
@@ -42,6 +43,7 @@ export default defineConfig([
 			VERSION: process.env.VERSION ?? packageJson.version,
 		},
 		fixedExtension: false,
+		sourcemap: false,
 	},
 	{
 		entry: {
@@ -57,6 +59,7 @@ export default defineConfig([
 			VERSION: process.env.VERSION ?? packageJson.version,
 		},
 		fixedExtension: false,
+		sourcemap: false,
 		banner: "#!/usr/bin/env node",
 	},
 ]);

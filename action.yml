@@ -37,6 +37,7 @@ runs:
         RAIGAL_FORMAT: ${{ inputs.format }}
         RAIGAL_VERSION: ${{ inputs.version }}
         RAIGAL_DIR: ${{ inputs.directory }}
+        RAIGAL_TOKEN: ${{ env.RAIGAL_TOKEN }}
       run: |
         scan_dir="$RAIGAL_DIR"
         if [[ "$scan_dir" != /* ]]; then
