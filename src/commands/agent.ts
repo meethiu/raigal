@@ -7,6 +7,7 @@ import { renderDisplayRows, renderDisplaySection } from "../ui/display.js";
 import { renderHeader } from "../ui/header.js";
 import { log } from "../ui/logger.js";
 import { agentConnectCommand } from "./agent-connect.js";
+import { requireEntitlement } from "../cloud/gate.js";
 import { APP_VERSION } from "../version.js";
 import { launchAgentInBackground, renderBackgroundLaunch } from "./agent-background.js";
 import { runAgentSession, type AgentSessionRunTelemetry } from "./agent-session.js";
@@ -115,6 +116,7 @@ export const agentCommand = async (
 ): Promise<AgentSessionRunTelemetry | Record<string, unknown> | null> => {
 	const started = performance.now();
 	const resolvedDir = path.resolve(directory);
+	await requireEntitlement({ directory: resolvedDir, mode: "fatal" });
 	let root: string;
 	try {
 		root = (await readAgentRoot(resolvedDir)).root;

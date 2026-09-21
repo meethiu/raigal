@@ -23,7 +23,9 @@ const resolveTsdownBin = (): string => {
 let outputDir: string;
 
 beforeEach(() => {
-	outputDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "aislop-build-")));
+	const cacheDir = path.join(PROJECT_ROOT, "node_modules", ".cache");
+	const baseDir = fs.existsSync(cacheDir) ? cacheDir : os.tmpdir();
+	outputDir = fs.realpathSync(fs.mkdtempSync(path.join(baseDir, "aislop-build-")));
 });
 
 afterEach(() => {

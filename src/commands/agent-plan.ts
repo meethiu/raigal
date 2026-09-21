@@ -13,6 +13,7 @@ import { renderHeader } from "../ui/header.js";
 import { log } from "../ui/logger.js";
 import { runSubprocess } from "../utils/subprocess.js";
 import { APP_VERSION } from "../version.js";
+import { requireEntitlement } from "../cloud/gate.js";
 import { scanJson } from "./agent-local-cli.js";
 import type { AgentOptions, AgentScanJson } from "./agent-types.js";
 
@@ -210,6 +211,7 @@ export const renderAgentPlan = (plan: AgentPlan): string => {
 export const agentPlanCommand = async (directory: string, options: AgentOptions): Promise<void> => {
 	try {
 		const requestedDirectory = path.resolve(directory);
+		await requireEntitlement({ directory: requestedDirectory, mode: "fatal" });
 		const git = await readGitPlanState(directory);
 		const providerChoice = resolveAgentProviderSelection({
 			root: git.root,

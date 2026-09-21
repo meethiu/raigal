@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { requireEntitlement } from "../../cloud/gate.js";
 import { loadConfig } from "../../config/index.js";
 import { runEngines } from "../../engines/orchestrator.js";
 import type { Diagnostic, EngineContext, EngineName } from "../../engines/types.js";
@@ -100,6 +101,7 @@ export const writeBaseline = (cwd: string, baseline: Baseline): string => {
 export const captureBaseline = async (
 	cwd: string,
 ): Promise<{ score: number; fileCount: number; path: string }> => {
+	await requireEntitlement({ directory: cwd, mode: "fatal" });
 	const project = await discoverProject(cwd);
 	const config = loadConfig(cwd);
 	const context: EngineContext = {

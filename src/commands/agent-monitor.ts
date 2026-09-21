@@ -11,6 +11,7 @@ import { LiveRail } from "../ui/live-rail.js";
 import { log } from "../ui/logger.js";
 import { runSubprocess } from "../utils/subprocess.js";
 import { APP_VERSION } from "../version.js";
+import { requireEntitlement } from "../cloud/gate.js";
 import { scanJson } from "./agent-local-cli.js";
 import {
 	launchMonitorInBackground,
@@ -382,6 +383,7 @@ export const agentMonitorCommand = async (
 ): Promise<void> => {
 	try {
 		const requestedDirectory = path.resolve(directory);
+		await requireEntitlement({ directory: requestedDirectory, mode: "fatal" });
 		const { root } = await prepareAgentLocalState(requestedDirectory);
 		const resolved = resolveMonitorProvider(root, options);
 		renderMonitorIntro({ root, provider: resolved.provider, options: resolved.options });

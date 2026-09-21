@@ -108,6 +108,13 @@ export const maybeRunRaigal = async (
 	}
 
 	const result = await (options.runner ?? runRaigal)(request);
+	if (result.exitCode === 30 || result.exitCode === 31) {
+		process.stderr.write(
+			`[raigal] Analysis skipped for ${framework}: organization entitlement required.\n`,
+		);
+		return { ...result, exitCode: 0, skipped: true };
+	}
+
 	if (options.failOnError !== false && !result.skipped && result.exitCode !== 0) {
 		throw new Error(
 			`raigal ${request.args.join(" ")} failed for ${framework} with exit code ${String(

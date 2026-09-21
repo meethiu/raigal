@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { requireEntitlement } from "../../cloud/gate.js";
 import { findConfigDir, loadConfig, RULES_FILE } from "../../config/index.js";
 import { runEngines } from "../../engines/orchestrator.js";
 import type { Diagnostic, EngineContext, EngineName } from "../../engines/types.js";
@@ -58,6 +59,10 @@ export const runScopedScan = async (
 	filePaths: string[],
 ): Promise<ScopedScanResult> => {
 	const rootDirectory = path.resolve(cwd);
+	const gate = await requireEntitlement({ directory: rootDirectory, mode: "quiet" });
+	if (!gate.ok) {
+		return { diagnostics: [], score: 100, rootDirectory };
+	}
 	const config = loadConfig(rootDirectory);
 	const excludePatterns = [...config.exclude, ...readAislopIgnorePatterns(rootDirectory)];
 	const projectCandidates = listProjectFilesFromDisk(rootDirectory);

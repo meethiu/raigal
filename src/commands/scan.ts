@@ -29,6 +29,7 @@ import {
 	type ScanOptions,
 } from "./scan-options.js";
 import { buildScanRender } from "./scan-render.js";
+import { requireEntitlement } from "../cloud/gate.js";
 import { scanTargetError } from "./scan-validation.js";
 
 export { buildScanRender } from "./scan-render.js";
@@ -42,6 +43,7 @@ export const scanCommand = async (
 	options: ScanOptions,
 ): Promise<{ exitCode: number }> => {
 	const resolvedDir = path.resolve(directory);
+	await requireEntitlement({ directory: resolvedDir, mode: "fatal" });
 	const targetError = scanTargetError(resolvedDir, options);
 	if (targetError) {
 		if (options.json) {

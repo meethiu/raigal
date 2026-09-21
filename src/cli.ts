@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { Command, Option } from "commander";
 import { registerAgentCommand } from "./cli/agent-command.js";
 import { registerHookAliases, registerHookCommand } from "./cli/hook-command.js";
+import { registerCloudCommands } from "./cli/cloud-commands.js";
 import { registerExtraCommands } from "./cli-extra-commands.js";
 import { FIX_AGENT_FLAGS, matchFixAgent } from "./cli-fix-agents.js";
 import { commaSeparatedParser, noFlagsPassed, runScan, type ScanFlags } from "./cli-scan.js";
@@ -223,6 +224,7 @@ ciProgram.action(async (directory = ".", _flags, command) => {
 	}
 });
 registerExtraCommands(program);
+registerCloudCommands(program);
 
 registerHookCommand(program);
 registerHookAliases(program);

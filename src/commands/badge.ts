@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import path from "node:path";
+import { requireEntitlement } from "../cloud/gate.js";
 import { renderDisplayRows, renderDisplaySection } from "../ui/display.js";
 import { renderHeader } from "../ui/header.js";
 import { APP_VERSION } from "../version.js";
@@ -80,6 +81,7 @@ const detectGithubSlugFromGit = (directory: string): { owner: string; repo: stri
 };
 
 export const badgeCommand = async (options: BadgeOptions = {}): Promise<BadgeResult> => {
+	await requireEntitlement({ directory: options.directory, mode: "fatal" });
 	let owner = options.owner?.trim();
 	let repo = options.repo?.trim();
 

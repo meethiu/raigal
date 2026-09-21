@@ -1,6 +1,7 @@
 import { performance } from "node:perf_hooks";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { requireEntitlement } from "./cloud/gate.js";
 import {
 	aislopBaselineInputSchema,
 	aislopBaselineTool,
@@ -45,6 +46,12 @@ const err = (message: string) => ({
 const instrument = async <T>(tool: ToolName, fn: () => Promise<T> | T) => {
 	const startedAt = performance.now();
 	try {
+		const gate = await requireEntitlement({ mode: "quiet" });
+		if (!gate.ok) {
+			return err(
+				gate.message ?? "Raigal is proprietary software. No valid organization entitlement found.",
+			);
+		}
 		const value = await fn();
 		track({
 			event: "mcp_tool_called",

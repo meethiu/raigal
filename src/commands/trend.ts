@@ -1,3 +1,4 @@
+import { requireEntitlement } from "../cloud/gate.js";
 import { renderHeader } from "../ui/header.js";
 import { renderHintLine } from "../ui/logger.js";
 import { style, theme } from "../ui/theme.js";
@@ -121,7 +122,8 @@ export const buildTrendRender = (input: BuildTrendRenderInput): string => {
 	return `${lines.join("\n")}\n`;
 };
 
-export const trendCommand = (directory: string, limit?: number): void => {
+export const trendCommand = async (directory: string, limit?: number): Promise<void> => {
+	await requireEntitlement({ directory, mode: "fatal" });
 	const records = readHistory(directory);
 	process.stdout.write(buildTrendRender({ records, limit }));
 };

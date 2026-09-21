@@ -66,7 +66,7 @@ export const registerExtraCommands = (program: Command): void => {
 			await withCommandLifecycle(
 				{ command: "trend", config: loadConfig(directory).telemetry },
 				async () => {
-					trendCommand(directory, flags.limit);
+					await trendCommand(directory, flags.limit);
 					return { exitCode: 0 };
 				},
 			);

@@ -16,6 +16,7 @@ import { isCancel, multiselect, select, text } from "../ui/prompts.js";
 import { type RailStep, renderRail } from "../ui/rail.js";
 import { createSymbols } from "../ui/symbols.js";
 import { createTheme } from "../ui/theme.js";
+import { requireEntitlement } from "../cloud/gate.js";
 import { APP_VERSION } from "../version.js";
 
 interface BuildInitRenderInput {
@@ -204,6 +205,7 @@ interface InitOptions {
 
 export const initCommand = async (directory: string, options: InitOptions = {}): Promise<void> => {
 	const resolvedDir = path.resolve(directory);
+	await requireEntitlement({ directory: resolvedDir, mode: "fatal" });
 	const printBrand = options.printBrand !== false;
 
 	process.stdout.write(

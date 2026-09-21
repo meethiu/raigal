@@ -16,6 +16,7 @@ import { readAislopIgnorePatterns } from "../utils/source-files.js";
 import { APP_VERSION } from "../version.js";
 import { launchAgent, printPrompt } from "./fix-code.js";
 import { createEngineContext } from "./fix-context.js";
+import { requireEntitlement } from "../cloud/gate.js";
 import {
 	type PipelineDeps,
 	runAiSlopSteps,
@@ -105,6 +106,8 @@ export const fixCommand = async (
 			return { exitCode: 1 };
 		});
 	}
+
+	await requireEntitlement({ directory: resolvedDir, mode: "fatal" });
 
 	if (options.dryRun && (options.agent || options.prompt)) {
 		return withCommandLifecycle({ command: "fix", config: config.telemetry }, async () => {
