@@ -21,3 +21,4 @@ docs/specs/
 .raigal/worktrees/
 .raigal/agent/
 vitest-results.json
+raigal-cloud/
