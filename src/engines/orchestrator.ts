@@ -5,6 +5,7 @@ import { architectureEngine } from "./architecture/index.js";
 import { codeQualityEngine } from "./code-quality/index.js";
 import { dedupeOverlappingComments } from "./comment-dedupe.js";
 import { dedupeCSharpAsync } from "./csharp-dedupe.js";
+import { dedupeEquivalenceDiagnostics } from "./equivalence-dedupe.js";
 import { formatEngine } from "./format/index.js";
 import { lintEngine } from "./lint/index.js";
 import { securityEngine } from "./security/index.js";
@@ -74,7 +75,9 @@ export const runEngines = async (
 	);
 
 	const stripped = stripSecretDiagnostics(finalResults);
-	return dedupeOverlappingComments(dedupeCSharpAsync(stripped));
+	const csharp = dedupeCSharpAsync(stripped);
+	const comments = dedupeOverlappingComments(csharp);
+	return dedupeEquivalenceDiagnostics(comments);
 };
 
 const stripSecretDiagnostics = (results: EngineResult[]): EngineResult[] => {

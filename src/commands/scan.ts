@@ -205,6 +205,7 @@ const runScanBody = async (
 		security: config.security,
 		lint: config.lint,
 		architectureRulesPath: config.engines.architecture ? rulesPath : undefined,
+		engines: config.engines,
 	};
 
 	const rawResults = await runEnginesWithProgress(

@@ -89,6 +89,7 @@ export interface EngineConfig {
 	};
 	allowProjectLocalTools?: boolean;
 	architectureRulesPath?: string;
+	engines?: Record<string, boolean>;
 }
 
 export interface Engine {

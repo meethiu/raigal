@@ -49,13 +49,9 @@ export const appendHistory = (input: AppendHistoryInput): void => {
 	if (!file) return;
 
 	const record: HistoryRecord = {
-		timestamp: new Date().toISOString(),
-		score: input.score,
-		errors: input.errors,
-		warnings: input.warnings,
-		files: input.files,
-		cliVersion: APP_VERSION,
 		...input,
+		timestamp: new Date().toISOString(),
+		cliVersion: APP_VERSION,
 	};
 	try {
 		const serialized = maskSecrets(JSON.stringify(record));

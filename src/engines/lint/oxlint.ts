@@ -107,15 +107,12 @@ const detectTestFramework = (rootDir: string): TestFramework => {
 		if (allDeps.mocha) return "mocha";
 
 		if (
-			fs.existsSync(path.join(rootDir, "jest.config.js")) ||
-			fs.existsSync(path.join(rootDir, "jest.config.ts")) ||
-			fs.existsSync(path.join(rootDir, "jest.config.mjs"))
+			["jest.config.js", "jest.config.ts", "jest.config.mjs"].some((f) =>
+				fs.existsSync(path.join(rootDir, f)),
+			)
 		)
 			return "jest";
-		if (
-			fs.existsSync(path.join(rootDir, "vitest.config.ts")) ||
-			fs.existsSync(path.join(rootDir, "vitest.config.js"))
-		)
+		if (["vitest.config.ts", "vitest.config.js"].some((f) => fs.existsSync(path.join(rootDir, f))))
 			return "vitest";
 		if (fs.existsSync(path.join(rootDir, ".mocharc.yml"))) return "mocha";
 	} catch {
@@ -291,6 +288,7 @@ export const runOxlint = async (context: EngineContext): Promise<Diagnostic[]> =
 		testFramework,
 		globals: collectAmbientGlobals(context.rootDirectory),
 		noUndefSeverity: noUndefSeverityForContext(context),
+		securityEnabled: context.config.engines?.security !== false,
 	});
 	const ambientSources = detectAmbientSources(context.rootDirectory);
 	clearSstReferenceCache();
@@ -349,6 +347,7 @@ export const fixOxlint = async (
 		mode: "fix",
 		globals: collectAmbientGlobals(context.rootDirectory),
 		noUndefSeverity: noUndefSeverityForContext(context),
+		securityEnabled: context.config.engines?.security !== false,
 	});
 
 	try {
