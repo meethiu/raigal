@@ -2,7 +2,7 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { type AislopConfig, findConfigDir, RULES_FILE } from "../config/index.js";
 import { recordFullScanActivity } from "../engagement/full-scan-activity.js";
-import type { EngineConfig } from "../engines/types.js";
+import type { Diagnostic, EngineConfig, EngineResult } from "../engines/types.js";
 import { renderDiagnostics } from "../output/terminal.js";
 import { calculateScore } from "../scoring/index.js";
 import { applyRuleSeverities } from "../scoring/rule-severity.js";
@@ -31,11 +31,56 @@ import {
 import { buildScanRender } from "./scan-render.js";
 import { requireEntitlement } from "../cloud/gate.js";
 import { scanTargetError } from "./scan-validation.js";
+import { getActiveToken } from "../cloud/credentials.js";
+import { detectRepoRef } from "../cloud/context.js";
+import { toContractFinding } from "../cloud/fingerprint.js";
+import { applyPolicyToConfig, fetchRemotePolicy } from "../cloud/policy.js";
+import { getActiveRecorder } from "../cloud/recorder.js";
 
 export { buildScanRender } from "./scan-render.js";
 
 const renderScopeRow = (value: string): string =>
 	`${renderDisplayRows([{ label: "Scope", value }], { indent: 1 }).join("\n")}\n`;
+
+interface RecordScanParams {
+	results: EngineResult[];
+	allDiagnostics: Diagnostic[];
+	resolvedDir: string;
+	scoreable: boolean;
+	score: number | null;
+	totalFiles: number;
+	config: AislopConfig;
+	scoreFileCount: number;
+}
+
+const recordScanToCloud = (p: RecordScanParams): void => {
+	const recorder = getActiveRecorder();
+	if (!recorder) return;
+	for (const r of p.results) {
+		recorder.recordStep(`engine:${r.engine}`, r.elapsed, true, {
+			findings: r.diagnostics.length,
+		});
+	}
+	const engineScores: Record<string, number> = {};
+	for (const r of p.results) {
+		engineScores[r.engine] = calculateScore(
+			r.diagnostics,
+			p.config.scoring.weights,
+			p.config.scoring.thresholds,
+			p.scoreFileCount,
+			p.config.scoring.smoothing,
+			p.config.scoring.maxPerRule,
+		).score;
+	}
+	const contractFindings = p.allDiagnostics.map((d) => toContractFinding(d, p.resolvedDir));
+	recorder.setReport({
+		score: p.scoreable ? p.score : null,
+		scoreable: p.scoreable,
+		engine_scores: engineScores,
+		files_scanned: p.totalFiles,
+		findings: contractFindings,
+	});
+};
 
 export const scanCommand = async (
 	directory: string,
@@ -54,15 +99,31 @@ export const scanCommand = async (
 		return { exitCode: 1 };
 	}
 
-	const excludePatterns = [...config.exclude, ...readAislopIgnorePatterns(resolvedDir)];
+	let activeConfig = config;
+	const activeToken = getActiveToken();
+	const repoRef = detectRepoRef(resolvedDir);
+	if (activeToken && repoRef) {
+		try {
+			const remotePolicy = await fetchRemotePolicy(repoRef.slug, activeToken.token);
+			if (remotePolicy) {
+				const merged = applyPolicyToConfig(activeConfig, remotePolicy);
+				activeConfig = merged.config;
+				getActiveRecorder()?.setPolicyMeta(remotePolicy.version, remotePolicy.hash);
+			}
+		} catch {
+			/* non-fatal policy fetch */
+		}
+	}
+
+	const excludePatterns = [...activeConfig.exclude, ...readAislopIgnorePatterns(resolvedDir)];
 	const scanScope = collectScanFileScope({
 		excludePatterns,
-		includePatterns: config.include,
+		includePatterns: activeConfig.include,
 		mode: resolveScanScopeMode(options),
 		rootDirectory: resolvedDir,
 	});
 	const discoveredProject = await discoverProject(resolvedDir, excludePatterns, {
-		includePatterns: config.include,
+		includePatterns: activeConfig.include,
 	});
 	const projectInfo = {
 		...discoveredProject,
@@ -72,14 +133,14 @@ export const scanCommand = async (
 	return withCommandLifecycle(
 		{
 			command: options.command ?? "scan",
-			config: config.telemetry,
+			config: activeConfig.telemetry,
 			languages: projectInfo.languages,
 			fileCount: scanScope.scoreFileCount,
 		},
 		() =>
 			runScanBody(
 				resolvedDir,
-				config,
+				activeConfig,
 				options,
 				projectInfo,
 				scanScope,
@@ -223,6 +284,17 @@ const runScanBody = async (
 		engineIssues,
 		engineTimings,
 	};
+
+	recordScanToCloud({
+		results,
+		allDiagnostics,
+		resolvedDir,
+		scoreable,
+		score: scoreResult.score,
+		totalFiles: files.length + testFiles.length,
+		config,
+		scoreFileCount,
+	});
 
 	if (options.sarif) {
 		const { buildSarifLog } = await import("../output/sarif.js");

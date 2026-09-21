@@ -27,11 +27,14 @@ import { maybeNotifyUpdate } from "./update-notifier.js";
 import { killActiveChildren } from "./utils/subprocess.js";
 import { APP_VERSION } from "./version.js";
 
+import { finishActiveRecorder, startRunRecorder } from "./cloud/recorder.js";
+
 // Reap any scanner still running before exiting: on POSIX the tools are spawned
 // in their own process groups, so a Ctrl-C to the CLI's group would otherwise
 // leave them orphaned (win32 children share the console and get Ctrl-C anyway).
-const handleTerminationSignal = (): void => {
+const handleTerminationSignal = async (): Promise<void> => {
 	killActiveChildren();
+	await finishActiveRecorder(130);
 	process.exit(0);
 };
 process.on("SIGINT", handleTerminationSignal);
@@ -225,9 +228,26 @@ ciProgram.action(async (directory = ".", _flags, command) => {
 });
 registerExtraCommands(program);
 registerCloudCommands(program);
-
 registerHookCommand(program);
 registerHookAliases(program);
+
+program.hook("preAction", (_thisCommand, actionCommand) => {
+	const cmdName = actionCommand.name() || "scan";
+	const supported = ["scan", "ci", "fix", "agent", "hook"] as const;
+	if (supported.includes(cmdName as (typeof supported)[number])) {
+		const rawArgs = process.argv.slice(2);
+		const flagNames = rawArgs
+			.filter((arg) => arg.startsWith("-"))
+			.map((arg) => arg.replace(/^--?/, "").split("=")[0] ?? "");
+		const dir = actionCommand.args?.[0] || process.cwd();
+		startRunRecorder(cmdName as (typeof supported)[number], dir, flagNames);
+	}
+});
+
+program.hook("postAction", async () => {
+	const code = typeof process.exitCode === "number" ? process.exitCode : 0;
+	await finishActiveRecorder(code);
+});
 
 const main = async () => {
 	fireInstalledOnce();
