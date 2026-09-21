@@ -99,6 +99,9 @@ Scan only staged files to keep commits clean:
 npx raigal scan --staged
 ```
 
+By default, `scan` only exits non-zero (exit code 1) if error-severity diagnostics exist, allowing commits to proceed when only warnings or style cleanup items are present. You can configure this with `--fail-on <none|error|warning>` (e.g., `npx raigal scan --staged --fail-on warning` to block commits on any warning).
+
+
 ## PR-scoped gating
 
 A plain `--changes` diffs the working tree against `HEAD`, so in CI (where PR changes are already committed) it sees nothing. Pass `--base <ref>` to diff against the target branch instead. Both `scan` and `ci` accept `--changes` and `--base`, so you can gate a PR on only the files it touches:

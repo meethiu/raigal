@@ -1,5 +1,11 @@
 import path from "node:path";
 import { performance } from "node:perf_hooks";
+import { detectRepoRef } from "../cloud/context.js";
+import { getActiveToken } from "../cloud/credentials.js";
+import { toContractFinding } from "../cloud/fingerprint.js";
+import { requireEntitlement } from "../cloud/gate.js";
+import { applyPolicyToConfig, fetchRemotePolicy } from "../cloud/policy.js";
+import { getActiveRecorder } from "../cloud/recorder.js";
 import { type AislopConfig, findConfigDir, RULES_FILE } from "../config/index.js";
 import { recordFullScanActivity } from "../engagement/full-scan-activity.js";
 import type { Diagnostic, EngineConfig, EngineResult } from "../engines/types.js";
@@ -19,7 +25,7 @@ import { applySuppressions } from "../utils/suppress.js";
 import { APP_VERSION } from "../version.js";
 import { renderCoverageNotice } from "./scan-coverage.js";
 import { runEnginesWithProgress } from "./scan-engine-runner.js";
-import { computeScanExitCode } from "./scan-exit-code.js";
+import { computeCiExitCode, computeScanExitCode } from "./scan-exit-code.js";
 import { collectScanFileScope, deriveScanCoverage } from "./scan-file-scope.js";
 import {
 	isFullProjectScan,
@@ -29,13 +35,7 @@ import {
 	type ScanOptions,
 } from "./scan-options.js";
 import { buildScanRender } from "./scan-render.js";
-import { requireEntitlement } from "../cloud/gate.js";
 import { scanTargetError } from "./scan-validation.js";
-import { getActiveToken } from "../cloud/credentials.js";
-import { detectRepoRef } from "../cloud/context.js";
-import { toContractFinding } from "../cloud/fingerprint.js";
-import { applyPolicyToConfig, fetchRemotePolicy } from "../cloud/policy.js";
-import { getActiveRecorder } from "../cloud/recorder.js";
 
 export { buildScanRender } from "./scan-render.js";
 
@@ -261,12 +261,29 @@ const runScanBody = async (
 	);
 	const scoreable = scanCoverage.scoreable;
 	const hasErrors = allDiagnostics.some((d) => d.severity === "error");
-	const exitCode = computeScanExitCode({
-		hasErrors,
-		scoreable,
-		score: scoreResult.score,
-		failBelow: config.ci.failBelow,
-	});
+	const hasWarnings = allDiagnostics.some((d) => d.severity === "warning");
+	let exitCode: number;
+	if (options.command === "ci") {
+		exitCode = computeCiExitCode({
+			hasErrors,
+			scoreable,
+			score: scoreResult.score,
+			failBelow: config.ci.failBelow,
+		});
+	} else if (options.command === "scan" || options.failOn !== undefined) {
+		exitCode = computeScanExitCode({
+			hasErrors,
+			hasWarnings,
+			failOn: options.failOn ?? "error",
+		});
+	} else {
+		exitCode = computeScanExitCode({
+			hasErrors,
+			scoreable,
+			score: scoreResult.score,
+			failBelow: config.ci.failBelow,
+		});
+	}
 
 	const engineIssues: EngineCounts = {};
 	const engineTimings: EngineCounts = {};

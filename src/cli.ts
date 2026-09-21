@@ -5,7 +5,7 @@ import { registerCloudCommands } from "./cli/cloud-commands.js";
 import { registerHookAliases, registerHookCommand } from "./cli/hook-command.js";
 import { registerExtraCommands } from "./cli-extra-commands.js";
 import { FIX_AGENT_FLAGS, matchFixAgent } from "./cli-fix-agents.js";
-import { commaSeparatedParser, noFlagsPassed, runScan, type ScanFlags } from "./cli-scan.js";
+import { addFilterAndFailOnOptions, noFlagsPassed, runScan, type ScanFlags } from "./cli-scan.js";
 import { finishActiveRecorder, startRunRecorder } from "./cloud/recorder.js";
 import { ciCommand } from "./commands/ci.js";
 import { doctorCommand } from "./commands/doctor.js";
@@ -78,19 +78,9 @@ const program = new Command()
 	.option("-d, --verbose", "show file details per rule")
 	.option("--json", "output JSON instead of terminal UI")
 	.option("--sarif", "output SARIF 2.1.0 (for GitHub code scanning)")
-	.option("--format <format>", "output format: json or sarif")
-	.option(
-		"--exclude <patterns>",
-		"comma-separated or repeatable list of paths and files to exclude",
-		commaSeparatedParser,
-		[],
-	)
-	.option(
-		"--include <patterns>",
-		"comma-separated or repeatable list of paths and files to include",
-		commaSeparatedParser,
-		[],
-	)
+	.option("--format <format>", "output format: json or sarif");
+
+addFilterAndFailOnOptions(program)
 	.showSuggestionAfterError()
 	.action(async (directory: string, flags: ScanFlags) => {
 		if (hasNoUserArgs() && noFlagsPassed(flags) && process.stdin.isTTY) {
@@ -104,7 +94,7 @@ const program = new Command()
 		await runScan(directory, flags);
 	});
 
-program
+const scanCmd = program
 	.command("scan [directory]")
 	.description("Score a project and print findings")
 	.option("--changes", "only scan changed files")
@@ -113,22 +103,11 @@ program
 	.option("-d, --verbose", "show file details per rule")
 	.option("--json", "output JSON")
 	.option("--sarif", "output SARIF 2.1.0 (for GitHub code scanning)")
-	.option("--format <format>", "output format: json or sarif")
-	.option(
-		"--exclude <patterns>",
-		"comma-separated or repeatable list of paths and files to exclude",
-		commaSeparatedParser,
-		[],
-	)
-	.option(
-		"--include <patterns>",
-		"comma-separated or repeatable list of paths and files to include",
-		commaSeparatedParser,
-		[],
-	)
-	.action(async (directory = ".", _flags, command) => {
-		await runScan(directory, command.optsWithGlobals() as ScanFlags);
-	});
+	.option("--format <format>", "output format: json or sarif");
+
+addFilterAndFailOnOptions(scanCmd).action(async (directory = ".", _flags, command) => {
+	await runScan(directory, command.optsWithGlobals() as ScanFlags);
+});
 
 const fixProgram = program
 	.command("fix [directory]")

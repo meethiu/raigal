@@ -1,4 +1,6 @@
+import { type Command, Option } from "commander";
 import { scanCommand } from "./commands/scan.js";
+import type { FailOnMode } from "./commands/scan-exit-code.js";
 import { ConfigError, loadConfig } from "./config/index.js";
 import { flushTelemetry } from "./telemetry/index.js";
 
@@ -12,6 +14,7 @@ export interface ScanFlags {
 	format?: string;
 	exclude?: string[];
 	include?: string[];
+	failOn?: FailOnMode;
 }
 
 export const commaSeparatedParser = (value: string, previous: string[] = []): string[] => {
@@ -21,6 +24,27 @@ export const commaSeparatedParser = (value: string, previous: string[] = []): st
 		.filter(Boolean);
 	return [...previous, ...parts];
 };
+
+export const addFilterAndFailOnOptions = (cmd: Command): Command =>
+	cmd
+		.option(
+			"--exclude <patterns>",
+			"comma-separated or repeatable list of paths and files to exclude",
+			commaSeparatedParser,
+			[],
+		)
+		.option(
+			"--include <patterns>",
+			"comma-separated or repeatable list of paths and files to include",
+			commaSeparatedParser,
+			[],
+		)
+		.addOption(
+			new Option(
+				"--fail-on <level>",
+				"exit with code 1 on findings matching level: none, error, or warning",
+			).choices(["none", "error", "warning"]),
+		);
 
 const wantsSarif = (flags: ScanFlags): boolean => Boolean(flags.sarif) || flags.format === "sarif";
 
@@ -52,6 +76,8 @@ export const runScan = async (directory: string, flags: ScanFlags): Promise<void
 		sarif,
 		exclude: flags.exclude,
 		include: flags.include,
+		failOn: flags.failOn ?? "error",
+		command: "scan",
 	});
 	if (exitCode !== 0) {
 		await flushTelemetry();
@@ -66,5 +92,6 @@ export const noFlagsPassed = (flags: ScanFlags): boolean =>
 	!flags.json &&
 	!flags.sarif &&
 	!flags.format &&
+	!flags.failOn &&
 	!(flags.exclude && flags.exclude.length > 0) &&
 	!(flags.include && flags.include.length > 0);

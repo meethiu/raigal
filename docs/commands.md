@@ -67,8 +67,11 @@ npx raigal@latest scan
 | `--json` | Output JSON instead of terminal UI |
 | `--sarif` | Output SARIF 2.1.0 |
 | `--format <format>` | Output format: `json` or `sarif` |
+| `--fail-on <level>` | Exit with code 1 on findings matching level: `none`, `error` (default), or `warning` |
 | `--include <patterns>` | Only scan matching comma-separated or repeated paths |
 | `--exclude <patterns>` | Exclude comma-separated or repeated paths |
+
+By default, `raigal scan` (including `raigal scan --staged`) exits with code 1 only when error-severity diagnostics exist. It never applies the score gate; score threshold gating is reserved for `raigal ci`. Use `--fail-on warning` to fail on warnings, or `--fail-on none` to always exit 0.
 
 ### ci
 

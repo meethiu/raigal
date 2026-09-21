@@ -352,6 +352,8 @@ Run directly on staged files:
 raigal scan --staged
 ```
 
+By default, `scan` exits 1 only on error-severity findings. To block commits on warnings, pass `--fail-on warning`.
+
 Or wire it into the [pre-commit](https://pre-commit.com) framework via the bundled hook:
 
 ```yaml

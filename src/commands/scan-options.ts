@@ -1,3 +1,4 @@
+import type { FailOnMode } from "./scan-exit-code.js";
 import type { ScanScopeMode } from "./scan-file-scope.js";
 
 export interface ScanOptions {
@@ -13,6 +14,7 @@ export interface ScanOptions {
 	include?: string[];
 	/** Used for telemetry to distinguish scan vs ci invocation */
 	command?: "scan" | "ci";
+	failOn?: FailOnMode;
 }
 
 // SARIF and JSON are machine outputs: suppress all human chrome on stdout.
