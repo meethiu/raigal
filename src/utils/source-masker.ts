@@ -1,6 +1,7 @@
 import { maskCSharp, maskCStyle } from "./source-masker-cstyle.js";
 import { maskSimple } from "./source-masker-simple.js";
 import { consumeQuotedString } from "./string-literals.js";
+import { tokenizeJs } from "./js-tokens.js";
 
 type LangFamily = "js" | "py" | "rb" | "php" | "csharp" | "cstyle" | "none";
 
@@ -15,7 +16,7 @@ const CSHARP_EXTS = new Set([".cs"]);
 // C and C++ (including headers) share C-style string and character literals
 // and `//` + `/* */` comments, so the cstyle masker handles them.
 const CPP_EXTS = new Set([".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx"]);
-const C_STYLE_COMMENT_EXTS = new Set([".go"]);
+const C_STYLE_COMMENT_EXTS = new Set([".go", ".rs", ".java", ".kt", ".swift", ".scala", ".zig"]);
 
 const familyForExt = (ext: string): LangFamily => {
 	if (JS_EXTS.has(ext)) return "js";
@@ -240,4 +241,98 @@ const consumeTemplateString = (content: string, start: number): TemplateScan => 
 		i++;
 	}
 	return { maskEnd: i, resumeAt: i, openedInterp: false };
+};
+
+const getLineFromOffset = (lineOffsets: number[], offset: number): number => {
+	let low = 0;
+	let high = lineOffsets.length - 1;
+	while (low <= high) {
+		const mid = (low + high) >> 1;
+		if (lineOffsets[mid] <= offset) {
+			low = mid + 1;
+		} else {
+			high = mid - 1;
+		}
+	}
+	return high + 1;
+};
+
+export const getCommentLines = (content: string, ext: string): Set<number> => {
+	const commentLines = new Set<number>();
+	const family = familyForExt(ext);
+	if (family === "js") {
+		const tokens = tokenizeJs(content, ext);
+		const lineOffsets = [0];
+		for (let i = 0; i < content.length; i++) {
+			if (content[i] === "\n") lineOffsets.push(i + 1);
+		}
+		for (const t of tokens) {
+			if (t.kind !== "comment") continue;
+			const startLine = getLineFromOffset(lineOffsets, t.start);
+			const endLine = getLineFromOffset(lineOffsets, Math.max(t.start, t.end - 1));
+			for (let ln = startLine; ln <= endLine; ln++) {
+				commentLines.add(ln);
+			}
+		}
+		return commentLines;
+	}
+	const masked = maskComments(content, ext);
+	if (masked === content) return commentLines;
+	let currentLine = 1;
+	for (let i = 0; i < content.length; i++) {
+		if (content[i] !== masked[i] && content[i] !== " " && content[i] !== "\t") {
+			commentLines.add(currentLine);
+		}
+		if (content[i] === "\n") currentLine++;
+	}
+	return commentLines;
+};
+
+export const isCommentAtLine = (content: string, ext: string, line: number): boolean =>
+	getCommentLines(content, ext).has(line);
+
+export const extractStringAndTemplateLiterals = (content: string, ext: string): string[] => {
+	const family = familyForExt(ext);
+	if (family === "js") {
+		const tokens = tokenizeJs(content, ext);
+		const result: string[] = [];
+		for (const t of tokens) {
+			if (t.kind === "string" || t.kind === "template" || t.kind === "jsx-text") {
+				result.push(t.text);
+			}
+		}
+		return result;
+	}
+	const masked = maskComments(content, ext);
+	const doubleMasked = maskStringsAndComments(content, ext);
+	const result: string[] = [];
+	let inLiteral = false;
+	let start = 0;
+	for (let i = 0; i < content.length; i++) {
+		const isLitChar = masked[i] !== " " && doubleMasked[i] === " ";
+		if (isLitChar && !inLiteral) {
+			inLiteral = true;
+			start = i;
+		} else if (!isLitChar && inLiteral) {
+			inLiteral = false;
+			result.push(content.slice(start, i));
+		}
+	}
+	if (inLiteral) result.push(content.slice(start));
+	return result;
+};
+
+export const areLiteralMultisetsEqual = (a: string[], b: string[]): boolean => {
+	if (a.length !== b.length) return false;
+	const count = new Map<string, number>();
+	for (const s of a) {
+		count.set(s, (count.get(s) ?? 0) + 1);
+	}
+	for (const s of b) {
+		const c = count.get(s);
+		if (!c) return false;
+		if (c === 1) count.delete(s);
+		else count.set(s, c - 1);
+	}
+	return count.size === 0;
 };

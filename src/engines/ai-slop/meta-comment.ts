@@ -90,7 +90,7 @@ export const detectMetaComments = async (context: EngineContext): Promise<Diagno
 			continue;
 		}
 
-		const blocks = collectBlocks(content.split("\n"), syntax);
+		const blocks = collectBlocks(content.split("\n"), syntax, content, ext);
 		for (const block of blocks) {
 			const reason = matchMetaSignal(block);
 			if (!reason) continue;

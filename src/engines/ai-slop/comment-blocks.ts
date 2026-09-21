@@ -1,4 +1,5 @@
 import { isRaigalDirectiveLine } from "../../utils/suppress.js";
+import { getCommentLines } from "../../utils/source-masker.js";
 import { MEANINGFUL_JSDOC_TAGS } from "./narrative-comments-patterns.js";
 
 type BlockKind = "line" | "jsdoc";
@@ -65,8 +66,13 @@ const isRustDocCommentLine = (line: string): boolean => {
 export const collectBlocks = (
 	sourceLines: string[],
 	syntax: { linePrefixes: string[] },
+	content?: string,
+	ext?: string,
 ): CommentBlock[] => {
 	const blocks: CommentBlock[] = [];
+	const actualContent = content ?? sourceLines.join("\n");
+	const actualExt = ext ?? (syntax.linePrefixes.includes("//") ? ".ts" : ".py");
+	const commentLines = getCommentLines(actualContent, actualExt);
 	let i = 0;
 	while (i < sourceLines.length) {
 		const line = sourceLines[i];
@@ -74,9 +80,16 @@ export const collectBlocks = (
 		const matchedPrefix = getMatchedLinePrefix(line, syntax);
 
 		if (matchedPrefix !== null) {
+			if (!commentLines.has(i + 1)) {
+				i += 1;
+				continue;
+			}
 			const start = i;
 			const raw: string[] = [];
 			while (i < sourceLines.length && getMatchedLinePrefix(sourceLines[i], syntax) !== null) {
+				if (!commentLines.has(i + 1)) {
+					break;
+				}
 				raw.push(sourceLines[i]);
 				i += 1;
 			}
@@ -99,6 +112,10 @@ export const collectBlocks = (
 		}
 
 		if (trimmed.startsWith("/**")) {
+			if (!commentLines.has(i + 1)) {
+				i += 1;
+				continue;
+			}
 			const start = i;
 			const raw: string[] = [sourceLines[i]];
 			let hasClose = /\*\/\s*$/.test(sourceLines[i]) && sourceLines[i].trim() !== "/**";

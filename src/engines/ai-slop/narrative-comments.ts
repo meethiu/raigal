@@ -253,7 +253,7 @@ export const detectNarrativeComments = async (context: EngineContext): Promise<D
 		}
 
 		const lines = content.split("\n");
-		const blocks = collectBlocks(lines, syntax);
+		const blocks = collectBlocks(lines, syntax, content, ext);
 
 		for (const block of blocks) {
 			const { matched, reason } = detectNarrativeInBlock(block, ext);

@@ -1,6 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Diagnostic, EngineContext } from "../types.js";
+import {
+	areLiteralMultisetsEqual,
+	extractStringAndTemplateLiterals,
+	isCommentAtLine,
+} from "../../utils/source-masker.js";
 import { collectBlocks, getCommentSyntax } from "./comment-blocks.js";
 import { detectNarrativeComments } from "./narrative-comments.js";
 
@@ -26,12 +31,14 @@ export const fixNarrativeComments = async (context: EngineContext): Promise<void
 		} catch {
 			continue;
 		}
+		const beforeLiterals = extractStringAndTemplateLiterals(content, ext);
 		const lines = content.split("\n");
-		const blocks = collectBlocks(lines, syntax);
+		const blocks = collectBlocks(lines, syntax, content, ext);
 		const toRemove = new Set<number>();
 		for (const d of diags) {
 			const block = blocks.find((b) => b.startLine === d.line);
 			if (!block) continue;
+			if (!isCommentAtLine(content, ext, block.startLine)) continue;
 			for (let ln = block.startLine; ln <= block.endLine; ln += 1) {
 				toRemove.add(ln);
 			}
@@ -51,6 +58,10 @@ export const fixNarrativeComments = async (context: EngineContext): Promise<void
 
 		const newContent = kept.join("\n");
 		if (newContent !== content) {
+			const afterLiterals = extractStringAndTemplateLiterals(newContent, ext);
+			if (!areLiteralMultisetsEqual(beforeLiterals, afterLiterals)) {
+				continue;
+			}
 			fs.writeFileSync(filePath, newContent);
 		}
 	}
