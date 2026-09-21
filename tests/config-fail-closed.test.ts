@@ -34,7 +34,7 @@ describe("Task 5: Fail-closed configuration on exit code 2", () => {
 		} catch (err) {
 			expect(err).toBeInstanceOf(ConfigError);
 			const configErr = err as ConfigError;
-			expect(configErr.filePath).toContain(".raigal/config.yaml");
+			expect(configErr.filePath.replace(/\\/g, '/')).toContain(".raigal/config.yaml");
 			expect(configErr.message).toMatch(/maxFuncLoc/);
 			expect(configErr.message).toMatch(/maxFunctionLoc/i);
 		}
