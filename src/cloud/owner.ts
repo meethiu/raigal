@@ -84,6 +84,25 @@ const spawnGitRemote = (resolved: string): string | null => {
 	}
 };
 
+const findGitRoot = (dir: string): string | null => {
+	let current = path.resolve(dir);
+	try {
+		const stat = fs.statSync(current);
+		if (stat.isFile()) current = path.dirname(current);
+	} catch {
+		// Ignore
+	}
+	while (true) {
+		if (fs.existsSync(path.join(current, ".git"))) {
+			return current;
+		}
+		const parent = path.dirname(current);
+		if (parent === current) break;
+		current = parent;
+	}
+	return null;
+};
+
 export const detectLocalRepoOwner = (directory: string): DetectedRepoOwner => {
 	// In GitHub Actions or environments where GITHUB_REPOSITORY is set
 	const envRepo = process.env.GITHUB_REPOSITORY?.trim();
@@ -97,13 +116,8 @@ export const detectLocalRepoOwner = (directory: string): DetectedRepoOwner => {
 		};
 	}
 
-	const resolved = path.resolve(directory);
-	const rawUrl = readGitConfigRemote(resolved);
-	if (rawUrl !== null) {
-		return parseGitRemote(rawUrl);
-	}
-
-	if (!fs.existsSync(path.join(resolved, ".git"))) {
+	const gitRoot = findGitRoot(directory);
+	if (!gitRoot) {
 		return {
 			owner: null,
 			repo: null,
@@ -112,7 +126,12 @@ export const detectLocalRepoOwner = (directory: string): DetectedRepoOwner => {
 		};
 	}
 
-	return parseGitRemote(spawnGitRemote(resolved));
+	const rawUrl = readGitConfigRemote(gitRoot);
+	if (rawUrl !== null) {
+		return parseGitRemote(rawUrl);
+	}
+
+	return parseGitRemote(spawnGitRemote(gitRoot));
 };
 
 export const isNonGitHubCi = (): boolean => {
