@@ -49,7 +49,7 @@ describe("Task 5: Fail-closed configuration on exit code 2", () => {
 		} catch (err) {
 			expect(err).toBeInstanceOf(ConfigError);
 			const configErr = err as ConfigError;
-			expect(configErr.filePath).toContain(".raigal/config.json");
+			expect(configErr.filePath.replace(/\\/g, '/')).toContain(".raigal/config.json");
 			expect(configErr.message).toMatch(/engins/);
 			expect(configErr.message).toMatch(/engines/i);
 		}
@@ -78,7 +78,7 @@ describe("Task 5: Fail-closed configuration on exit code 2", () => {
 		} catch (err) {
 			expect(err).toBeInstanceOf(ConfigError);
 			const configErr = err as ConfigError;
-			expect(configErr.filePath).toContain(".aislop/config.yaml");
+			expect(configErr.filePath.replace(/\\/g, '/')).toContain(".aislop/config.yaml");
 			expect(configErr.message).toMatch(/secuity/);
 			expect(configErr.message).toMatch(/security/i);
 		}
