@@ -8,6 +8,7 @@ import { dedupeCSharpAsync } from "./csharp-dedupe.js";
 import { formatEngine } from "./format/index.js";
 import { lintEngine } from "./lint/index.js";
 import { securityEngine } from "./security/index.js";
+import { FIXED_SECRET_DIAGNOSTIC_MESSAGE, isSecretClassRule } from "../utils/mask-secrets.js";
 import type { Engine, EngineContext, EngineName, EngineResult } from "./types.js";
 
 const ALL_ENGINES: Engine[] = [
@@ -72,5 +73,21 @@ export const runEngines = async (
 				},
 	);
 
-	return dedupeOverlappingComments(dedupeCSharpAsync(finalResults));
+	const stripped = stripSecretDiagnostics(finalResults);
+	return dedupeOverlappingComments(dedupeCSharpAsync(stripped));
+};
+
+const stripSecretDiagnostics = (results: EngineResult[]): EngineResult[] => {
+	for (const result of results) {
+		for (const d of result.diagnostics) {
+			if (d.redactSource || isSecretClassRule(d.rule)) {
+				d.redactSource = true;
+				d.message = FIXED_SECRET_DIAGNOSTIC_MESSAGE;
+				d.help = "Rotate it and load it from the environment.";
+				d.detail = undefined;
+				d.column = 0;
+			}
+		}
+	}
+	return results;
 };

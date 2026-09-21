@@ -1,5 +1,6 @@
 import path from "node:path";
 import type { Diagnostic, EngineResult, Severity } from "../engines/types.js";
+import { FIXED_SECRET_DIAGNOSTIC_MESSAGE, isSecretClassRule } from "../utils/mask-secrets.js";
 import { APP_VERSION } from "../version.js";
 
 const SARIF_VERSION = "2.1.0";
@@ -61,11 +62,14 @@ const buildRules = (diagnostics: Diagnostic[]): SarifReportingDescriptor[] => {
 	const byId = new Map<string, SarifReportingDescriptor>();
 	for (const d of diagnostics) {
 		if (byId.has(d.rule)) continue;
+		const isSecret = d.redactSource || isSecretClassRule(d.rule);
+		const desc = isSecret ? FIXED_SECRET_DIAGNOSTIC_MESSAGE : d.message;
+		const helpText = isSecret ? "Rotate it and load it from the environment." : d.help || d.message;
 		byId.set(d.rule, {
 			id: d.rule,
 			name: d.rule,
-			shortDescription: { text: d.message },
-			help: { text: d.help || d.message },
+			shortDescription: { text: desc },
+			help: { text: helpText },
 		});
 	}
 	return [...byId.values()];
@@ -76,21 +80,27 @@ export const buildSarifLog = (results: EngineResult[]): SarifLog => {
 	const rules = buildRules(diagnostics);
 	const ruleIndex = new Map(rules.map((rule, index) => [rule.id, index]));
 
-	const sarifResults: SarifResult[] = diagnostics.map((d) => ({
-		ruleId: d.rule,
-		ruleIndex: ruleIndex.get(d.rule) ?? 0,
-		level: levelFromSeverity(d.severity),
-		message: { text: d.message },
-		locations: [
-			{
-				physicalLocation: {
-					artifactLocation: { uri: toUri(d.filePath) },
-					region: { startLine: oneBased(d.line), startColumn: oneBased(d.column) },
+	const sarifResults: SarifResult[] = diagnostics.map((d) => {
+		const isSecret = d.redactSource || isSecretClassRule(d.rule);
+		return {
+			ruleId: d.rule,
+			ruleIndex: ruleIndex.get(d.rule) ?? 0,
+			level: levelFromSeverity(d.severity),
+			message: { text: isSecret ? FIXED_SECRET_DIAGNOSTIC_MESSAGE : d.message },
+			locations: [
+				{
+					physicalLocation: {
+						artifactLocation: { uri: toUri(d.filePath) },
+						region: {
+							startLine: oneBased(d.line),
+							startColumn: isSecret ? 1 : oneBased(d.column),
+						},
+					},
 				},
-			},
-		],
-		...(d.changeContext ? { properties: { changeContext: d.changeContext } } : {}),
-	}));
+			],
+			...(d.changeContext ? { properties: { changeContext: d.changeContext } } : {}),
+		};
+	});
 
 	return {
 		$schema: SARIF_SCHEMA,

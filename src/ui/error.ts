@@ -1,4 +1,5 @@
 import { highlightAislop } from "./brand.js";
+import { maskSecrets } from "../utils/mask-secrets.js";
 import { symbols as defaultSymbols, type Symbols } from "./symbols.js";
 import { theme as defaultTheme, style, type Theme } from "./theme.js";
 
@@ -17,10 +18,12 @@ interface ErrorDeps {
 export const renderError = (input: ErrorInput, deps: ErrorDeps = {}): string => {
 	const t = deps.theme ?? defaultTheme;
 	const s = deps.symbols ?? defaultSymbols;
-	const lines = [`\n ${style(t, "danger", s.fail)} ${style(t, "danger", input.message)}`];
+	const msg = maskSecrets(input.message);
+	const cause = input.cause ? maskSecrets(input.cause) : undefined;
+	const lines = [`\n ${style(t, "danger", s.fail)} ${style(t, "danger", msg)}`];
 
-	if (input.cause) {
-		lines.push(` ${style(t, "muted", s.rail)} ${style(t, "muted", input.cause)}`);
+	if (cause) {
+		lines.push(` ${style(t, "muted", s.rail)} ${style(t, "muted", cause)}`);
 	}
 	if ((input.hints && input.hints.length > 0) || input.docsUrl) {
 		lines.push("");

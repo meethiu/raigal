@@ -22,6 +22,7 @@ import {
 	flushTelemetry,
 	track,
 } from "./telemetry/index.js";
+import { maskSecrets } from "./utils/mask-secrets.js";
 import { APP_VERSION } from "./version.js";
 
 type ToolName =
@@ -35,11 +36,13 @@ type ToolName =
 	| "aislop_baseline";
 
 const ok = (data: unknown) => ({
-	content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
+	content: [{ type: "text" as const, text: maskSecrets(JSON.stringify(data, null, 2)) }],
 });
 
 const err = (message: string) => ({
-	content: [{ type: "text" as const, text: JSON.stringify({ error: message }, null, 2) }],
+	content: [
+		{ type: "text" as const, text: maskSecrets(JSON.stringify({ error: message }, null, 2)) },
+	],
 	isError: true,
 });
 

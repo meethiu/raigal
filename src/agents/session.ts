@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Diagnostic } from "../engines/types.js";
+import { maskSecrets } from "../utils/mask-secrets.js";
 import { agentSessionDir } from "./session-store.js";
 
 interface AgentSessionEvent {
@@ -54,7 +55,8 @@ export const createAgentSessionRecorder = (
 			sessionId: id,
 			...payload,
 		};
-		fs.appendFileSync(sessionPath, `${JSON.stringify(event)}\n`, "utf-8");
+		const serialized = maskSecrets(JSON.stringify(event));
+		fs.appendFileSync(sessionPath, `${serialized}\n`, "utf-8");
 	};
 
 	return { id, path: sessionPath, append };

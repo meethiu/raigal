@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Diagnostic } from "../engines/types.js";
+import { isSecretClassRule, maskSecrets } from "../utils/mask-secrets.js";
 
 const CONTEXT_LINES = 3;
 const MAX_DIAGNOSTICS_PER_FILE = 6;
@@ -38,7 +39,8 @@ const groupByFile = (
 };
 
 const snippetFor = (rootDirectory: string, diagnostic: Diagnostic): string | null => {
-	if (diagnostic.line <= 0) return null;
+	if (diagnostic.line <= 0 || diagnostic.redactSource || isSecretClassRule(diagnostic.rule))
+		return null;
 	const absolutePath = path.resolve(rootDirectory, diagnostic.filePath);
 	let content: string;
 	try {
@@ -78,6 +80,7 @@ export const buildRepairPrompt = (input: {
 		"- Do not change public APIs, exports, database schemas, or test expectations unless a finding directly requires it.",
 		"- Do not delete tests.",
 		"- Do not add dependencies unless the existing project already clearly expects them.",
+		"- Never print, copy, commit, or echo secret values or credentials. Replace all hardcoded credentials and secrets with environment-variable references (e.g. process.env.KEY).",
 		"- If a finding looks like a false positive, leave the code alone and mention it in your final summary.",
 		"- Run the relevant local verification command if it is obvious and cheap.",
 		"",
@@ -110,5 +113,5 @@ export const buildRepairPrompt = (input: {
 	}
 
 	lines.push("After editing, stop and summarize what changed and what you intentionally skipped.");
-	return lines.join("\n");
+	return maskSecrets(lines.join("\n"));
 };

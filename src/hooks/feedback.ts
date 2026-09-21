@@ -1,5 +1,6 @@
 import path from "node:path";
 import type { Diagnostic } from "../engines/types.js";
+import { FIXED_SECRET_DIAGNOSTIC_MESSAGE, isSecretClassRule } from "../utils/mask-secrets.js";
 import { toPosix } from "../utils/paths.js";
 
 interface FindingFix {
@@ -82,14 +83,15 @@ const toFinding = (d: Diagnostic, rootDirectory: string): Finding | null => {
 	const file = toPosix(
 		path.isAbsolute(d.filePath) ? path.relative(rootDirectory, d.filePath) : d.filePath,
 	);
+	const isSecret = d.redactSource || isSecretClassRule(d.rule);
 	return {
 		ruleId: d.rule,
 		severity: d.severity,
 		category: d.category,
 		file,
 		line: d.line,
-		col: d.column || undefined,
-		message: d.message,
+		col: isSecret ? undefined : d.column || undefined,
+		message: isSecret ? FIXED_SECRET_DIAGNOSTIC_MESSAGE : d.message,
 	};
 };
 

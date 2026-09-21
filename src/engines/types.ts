@@ -25,6 +25,7 @@ export interface Diagnostic {
 	fixable: boolean;
 	detail?: string;
 	changeContext?: ChangeContext;
+	redactSource?: boolean;
 }
 
 export interface EngineResult {

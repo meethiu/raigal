@@ -1,169 +1,183 @@
-# Raigal CLI ↔ Dashboard Integration (v2) Implementation Plan
+# Raigal CLI Defects Fix Plan
 
 ## Overview
-This document tracks Phase 0 reconnaissance and the implementation plan for integrating the proprietary Raigal CLI with the Raigal Cloud platform (`app.raigal.dev`).
+Comprehensive plan for fixing the 11 defects found across P0, P1, P2, and P3 phases in the Raigal CLI codebase. All work adheres to the test-first methodology, self-scanning constraints (files ≤ 400 LOC, functions ≤ 80 LOC, nesting ≤ 5, params ≤ 6), cross-platform compatibility, zero literal secrets in repository/fixtures, and clean conventional commits.
 
 ---
 
-## 1. Codebase Inventory & Verification
+## 1. Codebase Verification & Path Discrepancies
 
-### 1.1 Entry Points & Commands Analysis
+Prompt names and paths verified against actual repository code:
 
-| Entry Point / Command | File Location | Code Analysis / Modification? | Gated Status | Rationale |
-|---|---|---|---|---|
-| `raigal [directory]` (default / interactive) | `src/cli.ts` | Yes (scans or interactive fix) | **Gated** | Analyzes code; falls through to `runScan`. |
-| `raigal scan [directory]` | `src/cli.ts`, `src/cli-scan.ts` | Yes | **Gated** | Core scanning engine runner. |
-| `raigal ci [directory]` | `src/cli.ts`, `src/commands/ci.ts` | Yes | **Gated** | CI quality gate; runs analysis and evaluates threshold. |
-| `raigal fix [directory]` | `src/cli.ts`, `src/commands/fix.ts` | Yes | **Gated** | Analyzes findings and modifies source code. |
-| `raigal agent [directory]` | `src/cli/agent-command.ts`, `src/commands/agent.ts` | Yes | **Gated** | Runs worktree repair agent, scans and applies fixes. |
-| `raigal agent plan` | `src/cli/agent-command.ts`, `src/commands/agent-plan.ts` | Yes | **Gated** | Runs scan to preview findings and diff plan. |
-| `raigal agent apply` | `src/cli/agent-session-command.ts`, `src/commands/agent-apply.ts` | Yes | **Gated** | Applies worktree code modifications back to repository. |
-| `raigal agent monitor` | `src/cli/agent-monitor-command.ts`, `src/commands/agent-monitor.ts` | Yes | **Gated** | Continuous background scanning/repair loop. |
-| `raigal init [directory]` | `src/cli.ts`, `src/commands/init.ts` | Yes | **Gated** | Initializes `.raigal/config.yml` and workflow. (Per spec Section 1). |
-| `raigal badge [directory]` | `src/cli-extra-commands.ts`, `src/commands/badge.ts` | Minimal (git remote check) | **Gated** | Per spec Section 1. |
-| `raigal trend [directory]` | `src/cli-extra-commands.ts`, `src/commands/trend.ts` | Local history display | **Gated** | Per spec Section 1. |
-| `raigal hook run` | `src/cli/hook-command.ts`, `src/commands/hook.ts` | Yes | **Gated (Non-breaking)** | Runs analysis during commit/tool hooks. Must exit 0 / no-op if unlicensed. |
-| `raigal hook baseline` | `src/cli/hook-command.ts`, `src/commands/hook.ts` | Yes | **Gated** | Runs scan to generate baseline findings file. |
-| `raigal-mcp` binary | `src/mcp.ts` | Yes | **Gated (Non-breaking)** | MCP server with scan/fix/baseline tools. Returns error message in content, no process crash. |
-| Library exports | `src/index.ts` (`dist/index.js`) | Yes | **Gated** | Direct API usage of `scanCommand`, `fixCommand`, etc. |
-| Framework Adapters | `src/framework-adapters/*` (Vite, Astro, Nuxt, SvelteKit, Expo) | Yes | **Gated (Non-breaking)** | Spawns `raigal ci` or `scan`. If unlicensed, prints notice, produces no diagnostics, exits 0. |
-| VS Code Extension | `editors/vscode/src/extension.ts` | Yes | **Gated (Non-breaking)** | Spawns `raigal scan --json`. If unlicensed (exit 30/31), produces no diagnostics, no crash. |
-| GitHub Action | `action.yml` | Yes | **Gated** | Executes `raigal ci` with `RAIGAL_TOKEN` and OIDC. Fails if unlicensed (exit 30). |
-| Pre-commit Hook | `.pre-commit-hooks.yaml` | Yes | **Gated (Non-breaking)** | Runs `raigal scan --staged`. Must exit 0 on licence failure. |
-| `raigal login` | `src/commands/login.ts` (new) | No | **Ungated** | Device flow & token login. |
-| `raigal logout` | `src/commands/logout.ts` (new) | No | **Ungated** | Revokes session & clears cache. |
-| `raigal whoami` | `src/commands/whoami.ts` (new) | No | **Ungated** | Displays current org, user, trial, and allowed owners. |
-| `raigal telemetry --show` | `src/commands/telemetry-show.ts` (new) | No | **Ungated** | Prints JSON that would be sent for last run. |
-| `--help`, `-h`, `help` | `src/cli.ts` | No | **Ungated** | Top-level and subcommand help. |
-| `version`, `-V`, `-v`, `--version` | `src/cli.ts` | No | **Ungated** | Prints CLI version. |
-| `commands` | `src/cli-extra-commands.ts` | No | **Ungated** | Prints command reference. |
-| `update`, `upgrade` | `src/cli-extra-commands.ts` | No | **Ungated** | Checks latest version on npm. |
-| `doctor [directory]` | `src/cli.ts`, `src/commands/doctor.ts` | No (checks installed toolchains) | **Proposed: Ungated** | Diagnostics on system tooling; does not analyze project source code. |
-| `rules [directory]` | `src/cli-extra-commands.ts`, `src/commands/rules.ts` | No (explains rule catalog) | **Proposed: Ungated** | Documentation/reference of rules; no source code analysis. |
-| `hook install/uninstall/status` | `src/cli/hook-command.ts`, `src/commands/hook.ts` | No (edits hook config) | **Proposed: Ungated** | Hook lifecycle setup. |
-| `agent connect/providers/use` | `src/cli/agent-command.ts` | No (local setup hints) | **Proposed: Ungated** | Provider selection and auth setup. |
-| `agent sessions/show/stop/watch` | `src/cli/agent-session-command.ts` | No (session metadata) | **Proposed: Ungated** | Inspecting local session logs. |
-| `agent monitor list/show/stop` | `src/cli/agent-monitor-command.ts` | No (monitor metadata) | **Proposed: Ungated** | Managing monitor processes. |
+| Item in Prompt | Verified Location / Status | Notes |
+|---|---|---|
+| `security/hardcoded-secret` | `src/engines/security/secrets.ts` | Confirmed rule ID and detection logic |
+| `raigal fix --prompt` | `src/commands/fix.ts`, `src/commands/fix-code.ts` | `printPrompt` and `launchAgent` emit prompt |
+| `src/agents/prompt.ts` | `src/agents/prompt.ts` | `buildRepairPrompt` and `snippetFor` |
+| `.raigal/agent/sessions/` | `src/agents/session.ts`, `session-store.ts` | JSONL transcript persistence |
+| `.raigal/history.jsonl` | `src/utils/history.ts` | `appendHistory` appends scan runs |
+| SARIF output | `src/output/sarif.ts` | Driver name is currently `"aislop"` |
+| `src/utils/limits.ts` | Not yet created | New helper module to create for Task 3 |
+| `src/utils/source-masker.ts` | `src/utils/source-masker.ts` | Lexer/masker for JS, C#, Python, etc. |
+| `src/engines/ai-slop/comments.ts` | `src/engines/ai-slop/comments.ts` | Trivial comment detector |
+| `src/engines/ai-slop/comment-blocks.ts` | `src/engines/ai-slop/comment-blocks.ts` | Comment block collector |
+| `src/engines/ai-slop/narrative-comments-fix.ts` | `src/engines/ai-slop/narrative-comments-fix.ts` | Comment fixer |
+| `src/config/schema.ts` | `src/config/schema.ts` | Zod schema currently non-strict, catches errors |
+| `src/config/index.ts` | `src/config/index.ts` | Catches parse errors and falls back to defaults |
+| `src/config/extends.ts` | `src/config/extends.ts` | Extends chain loader |
+| `src/commands/scan-exit-code.ts` | `src/commands/scan-exit-code.ts` | Currently evaluates `failBelow` score gate |
+| `src/telemetry/client.ts` | `src/telemetry/client.ts` | Sends fetch even when `POSTHOG_KEY` is empty |
+| `tools/jb/aislop.DotSettings` | `tools/jb/aislop.DotSettings` | Needs renaming to `raigal.DotSettings` |
+| `src/hooks/feedback.ts` | `src/hooks/feedback.ts` | Schema is `"aislop.hook.v2"`, needs `"raigal.hook.v1"` |
+| `src/mcp.ts` | `src/mcp.ts` | Registers `aislop_*` and `raigal_*` tools |
+| `examples/architecture-rules.yml` | `examples/architecture-rules.yml` | Uses invalid `module:` key; needs `match:`, `forbid:` |
+| `tests/helpers/fake-secrets.ts` | Not yet created | Helper with `fakeSecrets()` runtime factory |
+| `docs/security-model.md` | Not yet created | New security model documentation |
+| `docs/dedupe-audit.md` | Not yet created | Deduplication audit documentation |
+| `scripts/check-branding.mjs` | Not yet created | Branding allowlist verification script |
 
 ---
 
-## 2. Telemetry Audit
+## 2. Phase Breakdown & Tasks
 
-- **Mechanism:** Anonymous PostHog telemetry via `src/telemetry/client.ts`.
-- **Host:** Default `https://eu.i.posthog.com` (`RAIGAL_POSTHOG_HOST`).
-- **Key:** Public PostHog project token `RAIGAL_POSTHOG_KEY` (currently defaults to `""`).
-- **Identity:** Anonymous UUID install ID stored in `~/.raigal/install_id` (or `XDG_STATE_HOME/raigal/install_id`).
-- **Events Tracked:** `cli_installed`, `cli_command_started`, `cli_command_completed`, `mcp_server_started`, `mcp_tool_called`, `hook_scan_completed`.
-- **Redaction:** `redaction.ts` ensures only allowlisted metadata is sent. Never contains source code, file contents, secrets, paths, or tokens.
-- **Opt-Out:** Disabled if `RAIGAL_NO_TELEMETRY=1`, `DO_NOT_TRACK=1`, `CI=true`, or `telemetry.enabled: false` in config.
-- **Separation:** As mandated by Section 1, PostHog telemetry remains strictly separate from organization activity logging (`POST /v1/runs`).
-- **New Feature:** `raigal telemetry --show` will be added to print the exact redacted JSON event payload.
+### Phase P0: Secret Leakage (Task 1)
+- **Goal:** Secret values must never leave the machine.
+- **Files to touch:**
+  - `tests/helpers/fake-secrets.ts` (new runtime secret generator)
+  - `src/utils/mask-secrets.ts` (new boundary redaction helper: `maskSecrets(text)`)
+  - `src/engines/types.ts` (rule metadata or diagnostic flag for secret class)
+  - `src/engines/orchestrator.ts` (strip source snippets/previews from secret-class diagnostics at engine boundary)
+  - `src/commands/fix-code.ts` (`getCodeSnippet` returns `null` for secret rules; prompt instructed not to commit secrets)
+  - `src/agents/prompt.ts` (`snippetFor` returns `null` for secret rules; repair prompt instruction added)
+  - `src/agents/session.ts` (scrub session events with `maskSecrets` before appending to transcript)
+  - `src/utils/history.ts` (mask before appending)
+  - `src/hooks/feedback.ts` (mask findings and messages in hook envelope)
+  - `src/mcp.ts` (mask content before returning ok/err responses)
+  - `src/output/sarif.ts` (ensure no snippet text for secret rules or any rules)
+  - `src/ui/logger.ts`, `src/ui/error.ts` (scrub debug output and error messages)
+  - `docs/security-model.md` (document security boundary guarantees)
+  - `tests/leak-matrix.test.ts` (comprehensive leak matrix across all 15+ surfaces)
+- **Risks & Mitigations:**
+  - Redaction regexes could impact performance: compile regexes once.
+  - Unparseable file error path could leak source line: wrap parser try/catches to scrub error messages.
 
----
+### Phase P1: Correctness (Tasks 2 to 6)
 
-## 3. Dependency Licence Audit
+#### Task 2: Duplicate findings inflate scores
+- **Goal:** Deduplicate findings representing the same underlying issue on the same file/line.
+- **Files to touch:**
+  - `src/engines/lint/oxlint-config.ts` (turn off `no-eval` when security engine is enabled)
+  - `src/engines/equivalence-dedupe.ts` (new data-driven equivalence table and deduplication pass)
+  - `src/engines/orchestrator.ts` (integrate equivalence deduplication before scoring)
+  - `docs/dedupe-audit.md` (audit report grouping diagnostics by file/line across fixture and repo)
+  - `tests/dedupe-equivalence.test.ts` (tests for eval, unused-import, tie-breaking, score stability)
+- **Equivalence Rules:**
+  - `security/eval` vs `eslint/no-eval`: keep `security/eval` (severity error vs warning).
+  - `ai-slop/unused-import` vs `eslint/no-unused-vars`: keep `ai-slop/unused-import` on same line only if import.
+  - Severity tie: keep native Raigal rule.
 
-Direct dependencies verified against permissive standards:
-- All 19 npm dependencies are MIT, Apache-2.0, ISC, BSD-3-Clause, or BlueOak-1.0.0.
-- No GPL or AGPL dependencies are bundled into the JavaScript output.
-- Bundled external binaries fetched by `scripts/install-tools.mjs`:
-  - `ruff`: MIT / Apache-2.0.
-  - `golangci-lint`: GPL-3.0. Downloaded as a standalone binary into `tools/bin/golangci-lint` and invoked as a separate subprocess via `node:child_process`. It is not bundled or linked into the JavaScript distribution.
-  - Roslyn Analyzers: Apache-2.0 / MIT.
-- Release guard: A new CI check `scripts/check-licenses.mjs` will be added to automatically fail the build if any GPL/AGPL dependencies are added to `dependencies`.
+#### Task 3: One boundary rule for all complexity limits
+- **Goal:** Consistent integer formula `Math.floor(max * multiplier * 110 / 100)` and `value > limit`.
+- **Files to touch:**
+  - `src/utils/limits.ts` (new helper: `exceedsLimit(value, max, multiplier = 1)`)
+  - `src/engines/code-quality/complexity.ts` (use `exceedsLimit` for file LOC and function LOC)
+  - `src/engines/code-quality/complexity-functions.ts` (use `exceedsLimit` for nesting and params)
+  - `tests/limits-boundary.test.ts` (exact boundary tests: 88/89 fn, 440/441 file, 5/6 nesting, 6/7 params, 880/881 tsx, 55/56 with max 50, 11/12 with max 10)
+- **Formula Verification:**
+  - Function max 80: `Math.floor(80 * 1 * 1.1) = 88`. 88 passes, 89 flags.
+  - File max 400: `Math.floor(400 * 1 * 1.1) = 440`. 440 passes, 441 flags.
+  - TSX file max 400: multiplier 2 applied to max before tolerance -> max 800. `Math.floor(800 * 1.1) = 880`. 880 passes, 881 flags.
+  - Nesting max 5: `Math.floor(5 * 1.1) = 5`. 5 passes, 6 flags.
+  - Params max 6: `Math.floor(6 * 1.1) = 6`. 6 passes, 7 flags.
 
----
+#### Task 4: Fixer corrupts template-literal contents
+- **Goal:** Prevent template-literal and JSX string contents from being classified as comments or modified by fixers.
+- **Files to touch:**
+  - `src/utils/source-masker.ts` (robust lexer classifying code, string, template quasi, template expression `${...}`, comment, regex, JSX text)
+  - `src/engines/ai-slop/comments.ts` (only match comments, never template or string text)
+  - `src/engines/ai-slop/comment-blocks.ts` (only collect genuine comment blocks)
+  - `src/engines/ai-slop/narrative-comments-fix.ts` (check range start token is a comment before deleting)
+  - `src/commands/fix-steps.ts` or post-fix validation (invariant check: multiset of string and template literals before and after fix must match exactly; revert if mismatch)
+  - `tests/template-literal-safety.test.ts` (table-driven tests for scan and fix)
 
-## 4. Exit Codes Verification
+#### Task 5: Invalid config must fail closed
+- **Goal:** Strict config validation; exit code 2 on config error; host tools exit 0 with 1 line.
+- **Files to touch:**
+  - `src/config/schema.ts` (use `.strict()` on objects; formatting function to format Zod errors with file path, key path, closest known key suggestion)
+  - `src/config/index.ts` (raise config error rather than swallowing with exit 0)
+  - `src/config/extends.ts` (validate each file in extends chain individually)
+  - `src/commands/scan.ts`, `src/commands/ci.ts`, `src/commands/fix.ts`, `src/cli.ts` (handle config error with exit code 2)
+  - Hook commands / host adapters (handle config error by printing one line and exiting 0)
+  - `src/commands/init.ts` (ensure init output adheres to strict schema)
+  - `tests/config-fail-closed.test.ts`
 
-Existing exit codes in codebase:
-- `0`: Success / clean scan / passing quality gate.
-- `1`: Quality gate failure / scan threshold breach / general CLI error.
-- Verified: Exit codes `30` and `31` are completely unused across the entire repository.
-- Conformance:
-  - `30`: Licence denied, expired trial, non-allowlisted owner, or missing credential.
-  - `31`: Licence unverifiable (network outage / server error with no valid offline lease).
-
----
-
-## 5. Architectural Design & Implementation Plan
-
-### 5.1 Directory & Module Layout
-New code will be organized cleanly under `src/cloud/`:
-```
-src/cloud/
-  contract.ts             # Exact copy of Section 2 Zod schemas
-  contract.sha256         # SHA-256 checksum of contract.ts
-  types.ts                # Derived TypeScript types
-  jwt.ts                  # Offline Ed25519 verification using node:crypto (no extra dependencies)
-  keys.ts                 # Embedded public keys (current & next, keyed by kid)
-  paths.ts                # Cross-platform config/state paths (XDG, Windows AppData)
-  credentials.ts          # Read/write/delete credentials (0o600 permissions)
-  entitlement.ts          # Cached lease, refresh logic, 72h grace, GitHub OIDC
-  owner.ts                # Local repo owner detection & allowlist matching
-  gate.ts                 # Central requireEntitlement() gate function
-  policy.ts               # Policy client, caching, and merge engine (org -> team -> repo -> local)
-  fingerprint.ts          # SHA-256 fingerprinting & secret message scrubbing
-  context.ts              # Git & CI context discovery (commit, branch, PR, OIDC)
-  recorder.ts             # Commander lifecycle hook recorder (run steps, timing, flags)
-  outbox.ts               # Outbox buffer (5MB cap, FIFO) for offline run uploads
-  client.ts               # HTTP client for Raigal Cloud API (timeout, retries, auth headers)
-```
-
-### 5.2 Offline Ed25519 Verification Strategy
-Instead of adding `jose` as a runtime dependency, Node's built-in `node:crypto` will be used:
-1. Parse JWT header: verify `alg === "EdDSA"`, check `kid` against embedded keys.
-2. Parse JWT payload: validate against `EntitlementClaims` schema in `contract.ts`.
-3. Verify signature: `crypto.verify(null, Buffer.from(`${header}.${payload}`), publicKey, Buffer.from(sig, "base64url"))`.
-4. Validate `iss === "https://app.raigal.dev"`, check `exp` against current timestamp (allowing grace on outage), and check `min_cli_version <= APP_VERSION`.
-This keeps dependencies minimal, fast, and secure.
-
-### 5.3 Gate Integration Point
-A single function `requireEntitlement({ directory, mode })` will be placed in `src/cloud/gate.ts` and called:
-1. In `src/commands/scan.ts` (protects `scan` and `ci`).
-2. In `src/commands/fix.ts` (protects `fix`).
-3. In `src/commands/agent.ts` and `src/commands/agent-plan.ts` (protects agent worktree sessions and plans).
-4. In `src/commands/agent-monitor.ts` (protects monitor loop).
-5. In `src/commands/init.ts` (protects `init`).
-6. In `src/commands/badge.ts` (protects `badge`).
-7. In `src/commands/trend.ts` (protects `trend`).
-8. In `src/mcp.ts` (returns non-breaking error content for MCP tools).
-9. In `src/framework-adapters/core.ts` (non-breaking 0 exit).
-10. In `src/hooks/io/scoped-scan.ts` and `baseline.ts` (non-breaking 0 exit for git hooks).
-
-### 5.4 Self-Scan Constraints
-All new files and functions will adhere strictly to:
-- File LOC <= 400
-- Function LOC <= 80
-- Nesting depth <= 5
-- Parameters <= 6
+#### Task 6: Predictable exit codes for scan
+- **Goal:** `raigal scan` exits 1 only on error-severity diagnostics; score gate stays in `ci`.
+- **Files to touch:**
+  - `src/commands/scan-exit-code.ts` (separate scan exit code logic from ci exit code logic)
+  - `src/commands/scan.ts` (add `--fail-on <none|error|warning>` option, default `error`)
+  - `src/cli.ts`, `src/cli-scan.ts` (wire up `--fail-on` flag)
+  - `docs/commands.md` and pre-commit documentation
+  - `tests/scan-exit-code.test.ts`
 
 ---
 
-## 6. Discrepancies & Resolutions
+### Phase P2: Hygiene (Tasks 7 to 10)
 
-1. **Branding & Legacy References:**
-   - The document mentions `.aislop/` in some places. The repo has recently migrated to `.raigal/` while preserving fallback reads for legacy `.aislop/`.
-   - Resolution: Store all cloud credentials, leases, and outbox in `.raigal/` (or platform standard directories), maintaining backwards compatibility.
-2. **PostHog Key:**
-   - `RAIGAL_POSTHOG_KEY` is currently unset by default.
-   - Resolution: Keep PostHog independent. The new `raigal telemetry --show` command will display the pending/last event format regardless of whether the key is set.
-3. **`telemetry --show` Command:**
-   - Currently not present in the CLI.
-   - Resolution: Implement as a subcommand in `src/cli-extra-commands.ts` or `src/commands/telemetry-show.ts`.
+#### Task 7: Telemetry
+- **Goal:** Zero network requests when `POSTHOG_KEY` is empty; rename `aislop_version` to `cli_version`; opt-out variables; `telemetry --show`.
+- **Files to touch:**
+  - `src/telemetry/client.ts` (disable network when key is empty, rename property to `cli_version`)
+  - `src/commands/telemetry-show.ts` (print exact pending event and enabled status)
+  - `scripts/check-tarball-keys.mjs` (new CI guard against unapproved PostHog keys in package tarball)
+  - `package.json` (wire guard script)
+  - `tests/telemetry-network.test.ts`
+
+#### Task 8: Remove branding leftovers
+- **Goal:** Rename remaining `aislop` references to `raigal`, except deliberate legacy reads.
+- **Files to touch:**
+  - `src/output/sarif.ts` (`tool.driver.name` -> `raigal`, help URLs)
+  - `tools/jb/aislop.DotSettings` -> `tools/jb/raigal.DotSettings`, update `package.json` and `src/utils/tooling.ts`
+  - `src/hooks/feedback.ts` (schema `raigal.hook.v1`)
+  - `src/hooks/install/*`, `src/hooks/adapters/*` (markers `raigal.mdc`, `RAIGAL.md`, `<!-- raigal:begin v1 -->`, `__raigal.hash`)
+  - Hook migration logic (detect and clean/upgrade old `aislop` installs)
+  - Temp paths: replace predictable temp names with `fs.mkdtemp(path.join(os.tmpdir(), "raigal-"))`
+  - `scripts/check-branding.mjs` (branding allowlist guard)
+  - Keep deliberate legacy reads: `.aislop/`, `.aislopignore`, `aislop-ignore-*`, `AISLOP_NO_TELEMETRY`
+  - Preserve LICENSE, THIRD_PARTY_NOTICES.md, and upstream copyright headers unchanged
+  - `tests/branding.test.ts`
+
+#### Task 9: MCP tool names and architecture examples
+- **Goal:** Exactly 4 MCP tools; verified `raigal_why` doc links; correct architecture rule keys.
+- **Files to touch:**
+  - `src/mcp.ts` (register only `raigal_scan`, `raigal_fix`, `raigal_why`, `raigal_baseline`)
+  - `src/mcp/tools.ts` (remove `aislop_*` aliases; verify doc link builder with configurable base URL)
+  - `examples/architecture-rules.yml` (replace `module:` with `match:` and `forbid:`)
+  - `tests/mcp-tools.test.ts`, `tests/architecture-examples.test.ts`
+
+#### Task 10: Make the report honest
+- **Goal:** Complete `docs/security-model.md` and align docs/README.
+- **Files to touch:**
+  - `docs/security-model.md` (sections: secret handling, telemetry, temp files, repository code execution table)
+  - `README.md`, `docs/commands.md` (update scan exit codes, config errors, rule IDs)
 
 ---
 
-## 7. Open Questions for Human Approval
+### Phase P3: Untrusted Mode (Task 11)
+- **Goal:** Audit code execution via `RAIGAL_EXEC_MARKER`, add `--untrusted` flag and `RAIGAL_UNTRUSTED=1`.
+- **Files to touch:**
+  - Audit fixtures in `tests/fixtures/exec-audit/` (Knip JS/TS, RuboCop require, .php-cs-fixer.php, Cargo build.rs, Expo app.config.js, C# project evaluation)
+  - `src/engines/orchestrator.ts`, `src/cli-scan.ts`, `src/commands/scan.ts`, `src/commands/fix.ts`
+  - Skip unsafe engines in untrusted mode and output notice of skipped tools
+  - Document results in `docs/security-model.md`
+  - `tests/untrusted-mode.test.ts`
 
-1. **Gate classification for auxiliary commands:**
-   - Should `raigal doctor` and `raigal rules` be ungated?
-   *Recommendation:* Keep them **ungated** so prospective users and engineers can inspect tool prerequisites and rule definitions without needing an active organization licence.
-   - Should `raigal agent connect` and `raigal agent providers` be ungated?
-   *Recommendation:* Keep them **ungated** so local provider auth can be verified before entering a gated repair session.
-2. **Public Key Bootstrap:**
-   - What key ID (`kid`) and public key should be embedded as the initial key in the CLI?
-   *Recommendation:* We will include a default development/staging Ed25519 public key in `src/cloud/keys.ts` with documentation for injecting production keys via environment variable or release build configuration.
-3. **Pre-commit hook behaviour:**
-   - Confirm that if a pre-commit hook runs `raigal scan --staged` without an active licence, it should output a one-line stderr message and exit code `0` so developer git commits are not blocked.
-   *Recommendation:* Yes, follow Section 1 rule 4 ("never break the host tool: print one line, produce no diagnostics, exit 0").
+---
+
+## 3. Decisions & Open Questions
+
+- **Exit code 2:** Verified that exit code 2 is completely unused across the codebase. Approved for config errors in scan, ci, fix, and hook runtime.
+- **Hook runtime config error:** Host tools exit 0 with a one-line warning so host IDEs/git commits are never broken by typos.
+- **Hook schema version:** `raigal.hook.v1` adopted as decided.
+- **MCP server tools:** Exposes exactly 4 tools (`raigal_scan`, `raigal_fix`, `raigal_why`, `raigal_baseline`).
+- **Dependencies:** No new external npm dependencies required. Node built-ins (`node:crypto`, `node:path`, `node:fs`, `node:os`) and existing packages (`zod/v4`, `yaml`, `micromatch`) are sufficient.

@@ -282,6 +282,7 @@ export const scanSecrets = async (context: EngineContext): Promise<Diagnostic[]>
 					column: 0,
 					category: "Security",
 					fixable: false,
+					redactSource: true,
 				});
 			}
 		}

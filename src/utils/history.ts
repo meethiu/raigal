@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { CONFIG_DIR } from "../config/index.js";
+import { maskSecrets } from "./mask-secrets.js";
 import { APP_VERSION } from "../version.js";
 
 const HISTORY_FILE = "history.jsonl";
@@ -35,6 +36,7 @@ export interface AppendHistoryInput {
 	errors: number;
 	warnings: number;
 	files: number;
+	[key: string]: unknown;
 }
 
 /**
@@ -53,9 +55,11 @@ export const appendHistory = (input: AppendHistoryInput): void => {
 		warnings: input.warnings,
 		files: input.files,
 		cliVersion: APP_VERSION,
+		...input,
 	};
 	try {
-		fs.appendFileSync(file, `${JSON.stringify(record)}\n`);
+		const serialized = maskSecrets(JSON.stringify(record));
+		fs.appendFileSync(file, `${serialized}\n`);
 	} catch {
 		// History is a convenience side effect; a failed write must not fail the scan.
 	}

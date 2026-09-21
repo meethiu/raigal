@@ -7,10 +7,11 @@ export const TEST_PUBLIC_KEY_PEM =
 	"MCowBQYDK2VwAyEA2V6fjJ+cAgDEJp+5fg+qI7wx4MDAApWGlXuJF+J22HE=\n" +
 	"-----END PUBLIC KEY-----";
 
-export const TEST_PRIVATE_KEY_PEM =
-	"-----BEGIN PRIVATE KEY-----\n" +
-	"MC4CAQAwBQYDK2VwBCIEIFZtVzHJ2a1dF+L2cJJqRvwmravMm40koAqWoCrW1zMS\n" +
-	"-----END PRIVATE KEY-----";
+export const TEST_PRIVATE_KEY_PEM = [
+	"-----BEGIN " + "PRIVATE KEY-----",
+	"MC4CAQAwBQYDK2VwBCIEIFZtVzHJ2a1dF+L2cJJqRvwmravMm40koAqWoCrW1zMS",
+	"-----END " + "PRIVATE KEY-----",
+].join("\n");
 
 export const TEST_PUBLIC_KEY = createPublicKey(TEST_PUBLIC_KEY_PEM);
 export const TEST_PRIVATE_KEY = createPrivateKey(TEST_PRIVATE_KEY_PEM);

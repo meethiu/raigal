@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import type { Diagnostic } from "../engines/types.js";
+import { isSecretClassRule, maskSecrets } from "../utils/mask-secrets.js";
 import { log } from "../ui/logger.js";
 import { style, theme } from "../ui/theme.js";
 
@@ -45,7 +46,8 @@ const AGENT_CONFIGS: Record<string, AgentConfig> = {
 };
 
 const getCodeSnippet = (rootDirectory: string, diagnostic: Diagnostic): string | null => {
-	if (diagnostic.line <= 0) return null;
+	if (diagnostic.line <= 0 || diagnostic.redactSource || isSecretClassRule(diagnostic.rule))
+		return null;
 
 	const absolutePath = path.resolve(rootDirectory, diagnostic.filePath);
 	let content: string;
@@ -167,10 +169,13 @@ const buildAgentPrompt = (
 	lines.push("---");
 	lines.push("Fix each issue following the guidance above. Prioritize errors over warnings.");
 	lines.push(
+		"Never print, copy, commit, or echo secret values or credentials. Replace all hardcoded credentials and secrets with environment-variable references (e.g. process.env.KEY).",
+	);
+	lines.push(
 		"After making changes, run `raigal scan` to verify all issues are resolved and the score improves.",
 	);
 
-	return lines.join("\n");
+	return maskSecrets(lines.join("\n"));
 };
 
 const SUPPORTED_AGENT_NAMES = Object.keys(AGENT_CONFIGS);
