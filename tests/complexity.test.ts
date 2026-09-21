@@ -99,12 +99,12 @@ describe("checkComplexity — file too large", () => {
 		expect(fileDiags).toHaveLength(0);
 	});
 
-	it("applies a 1.5x JSX tolerance plus a 10% buffer to .tsx files", async () => {
-		// maxFileLoc = 10 → TSX cap 15 → trigger at 17 (10% buffer). 17 passes; 18 fires.
-		const seventeen = writeFile("page.tsx", makeLines(17, "const x = 1;"));
-		const eighteen = writeFile("too-big.tsx", makeLines(18, "const x = 1;"));
+	it("applies a 2x JSX tolerance plus a 10% buffer to .tsx files", async () => {
+		// maxFileLoc = 10 → TSX cap 20 → trigger at 22 (10% buffer). 22 passes; 23 fires.
+		const twentyTwo = writeFile("page.tsx", makeLines(22, "const x = 1;"));
+		const twentyThree = writeFile("too-big.tsx", makeLines(23, "const x = 1;"));
 		const diagnostics = await checkComplexity(
-			makeContext([seventeen, eighteen], { maxFileLoc: 10 }),
+			makeContext([twentyTwo, twentyThree], { maxFileLoc: 10 }),
 		);
 		const fileDiags = diagnostics
 			.filter((d) => d.rule === "complexity/file-too-large")
@@ -114,11 +114,11 @@ describe("checkComplexity — file too large", () => {
 	});
 
 	it("applies the same JSX-plus-buffer tolerance to .jsx files", async () => {
-		const filePath = writeFile("widget.jsx", makeLines(18, "const x = 1;"));
+		const filePath = writeFile("widget.jsx", makeLines(23, "const x = 1;"));
 		const diagnostics = await checkComplexity(makeContext([filePath], { maxFileLoc: 10 }));
 		const fileDiags = diagnostics.filter((d) => d.rule === "complexity/file-too-large");
 		expect(fileDiags).toHaveLength(1);
-		expect(fileDiags[0].message).toContain("max: 15");
+		expect(fileDiags[0].message).toContain("max: 20");
 	});
 
 	it("applies a 10% buffer over maxFileLoc to .ts files (no JSX multiplier)", async () => {
@@ -134,9 +134,9 @@ describe("checkComplexity — file too large", () => {
 	});
 
 	it("gives C/C++ files a 2.5x file budget (same as Rust)", async () => {
-		// maxFileLoc = 10 → C++ budget 25, trigger at ceil(25 * 1.1) = 28.
-		const within = writeFile("ok.cpp", makeLines(28, "int x = 1;"));
-		const over = writeFile("big.cpp", makeLines(29, "int x = 1;"));
+		// maxFileLoc = 10 → C++ budget 25, trigger at floor(25 * 1.1) = 27. 27 passes, 28 fires.
+		const within = writeFile("ok.cpp", makeLines(27, "int x = 1;"));
+		const over = writeFile("big.cpp", makeLines(28, "int x = 1;"));
 		const diagnostics = await checkComplexity(makeContext([within, over], { maxFileLoc: 10 }));
 		const fileDiags = diagnostics.filter((d) => d.rule === "complexity/file-too-large");
 		expect(fileDiags).toHaveLength(1);

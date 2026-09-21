@@ -13,6 +13,7 @@ import {
 	isDataFile,
 	isExemptFromComplexity,
 } from "./complexity-functions.js";
+import { exceedsLimit } from "../../utils/limits.js";
 
 export { analyzeFunctions } from "./complexity-functions.js";
 
@@ -24,8 +25,8 @@ interface QualityLimits {
 }
 
 const FILE_LOC_MULTIPLIERS: Record<string, number> = {
-	".tsx": 1.5,
-	".jsx": 1.5,
+	".tsx": 2,
+	".jsx": 2,
 	".rs": 2.5,
 	".go": 1.5,
 	...CPP_FILE_LOC_MULTIPLIERS,
@@ -58,11 +59,11 @@ const checkFileDiagnostics = (
 
 	if (isDataFile(content)) return results;
 
+	const multiplier = FILE_LOC_MULTIPLIERS[ext] ?? 1;
 	const configuredMax = fileLocBudget(ext, relativePath, limits.maxFileLoc);
 	if (!Number.isFinite(configuredMax)) return results;
-	const triggerAt = Math.ceil(configuredMax * 1.1);
 
-	if (lineCount > triggerAt) {
+	if (exceedsLimit(lineCount, limits.maxFileLoc, multiplier)) {
 		results.push({
 			filePath: relativePath,
 			engine: "code-quality",
@@ -85,10 +86,14 @@ const JSX_EXTENSIONS = new Set([".tsx", ".jsx"]);
 const isComponentFunction = (name: string, ext: string): boolean =>
 	JSX_EXTENSIONS.has(ext) && /^[A-Z]/.test(name);
 
+const functionLocMultiplier = (fn: FunctionInfo, ext: string): number => {
+	if (isComponentFunction(fn.name, ext)) return 2.0;
+	if (ext === ".rs") return 1.5;
+	return 1.0;
+};
+
 const functionLocBudget = (fn: FunctionInfo, ext: string, base: number): number => {
-	if (isComponentFunction(fn.name, ext)) return Math.ceil(base * 2.0);
-	if (ext === ".rs") return Math.ceil(base * 1.5);
-	return base;
+	return Math.ceil(base * functionLocMultiplier(fn, ext));
 };
 
 const checkFunctionDiagnostics = (
@@ -99,9 +104,10 @@ const checkFunctionDiagnostics = (
 ): Diagnostic[] => {
 	const results: Diagnostic[] = [];
 
+	const multiplier = functionLocMultiplier(fn, ext);
 	const fnMax = functionLocBudget(fn, ext, limits.maxFunctionLoc);
 	const effectiveLineCount = fn.lineCount - fn.templateLines;
-	if (effectiveLineCount > Math.ceil(fnMax * 1.1)) {
+	if (exceedsLimit(effectiveLineCount, limits.maxFunctionLoc, multiplier)) {
 		results.push({
 			filePath: relativePath,
 			engine: "code-quality",
@@ -117,7 +123,7 @@ const checkFunctionDiagnostics = (
 		});
 	}
 
-	if (fn.maxNesting > limits.maxNesting) {
+	if (exceedsLimit(fn.maxNesting, limits.maxNesting)) {
 		results.push({
 			filePath: relativePath,
 			engine: "code-quality",
@@ -133,7 +139,7 @@ const checkFunctionDiagnostics = (
 		});
 	}
 
-	if (fn.paramCount > limits.maxParams) {
+	if (exceedsLimit(fn.paramCount, limits.maxParams)) {
 		results.push({
 			filePath: relativePath,
 			engine: "code-quality",
