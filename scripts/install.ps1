@@ -1,15 +1,14 @@
 # raigal Windows installer
 # Usage: iwr https://raigal.dev/install.ps1 | iex
 #
-# Downloads the raigal-win-x64.exe binary from GitHub Releases,
+# Downloads the raigal-win-x64.exe binary from raigal.dev,
 # verifies the SHA256 checksum, installs to %LOCALAPPDATA%\raigal\,
 # and adds that directory to the user PATH.
 
 $ErrorActionPreference = "Stop"
 
-$Repo        = "meethiu/raigal"
 $Asset       = "raigal-win-x64.exe"
-$GithubBase  = "https://github.com/$Repo/releases/latest/download"
+$DlBase      = "https://dl.raigal.dev/latest"
 $InstallDir  = Join-Path $env:LOCALAPPDATA "raigal"
 $InstallPath = Join-Path $InstallDir "raigal.exe"
 
@@ -23,11 +22,11 @@ $TmpChecksum = [System.IO.Path]::GetTempFileName()
 
 try {
     # Download binary
-    Invoke-WebRequest -Uri "$GithubBase/$Asset" -OutFile $TmpBinary -UseBasicParsing
+    Invoke-WebRequest -Uri "$DlBase/$Asset" -OutFile $TmpBinary -UseBasicParsing
 
     # Download checksum file (non-fatal if unavailable)
     try {
-        Invoke-WebRequest -Uri "$GithubBase/checksums.txt" -OutFile $TmpChecksum -UseBasicParsing
+        Invoke-WebRequest -Uri "$DlBase/checksums.txt" -OutFile $TmpChecksum -UseBasicParsing
 
         # Verify checksum
         $Lines    = Get-Content $TmpChecksum -ErrorAction SilentlyContinue

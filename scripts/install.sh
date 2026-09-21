@@ -3,9 +3,8 @@
 # Usage: curl -fsSL https://raigal.dev/install.sh | sh
 set -euo pipefail
 
-REPO="meethiu/raigal"
 BINARY_NAME="raigal"
-GITHUB_BASE="https://github.com/${REPO}/releases/latest/download"
+DL_BASE="https://dl.raigal.dev/latest"
 
 # ---------------------------------------------------------------------------
 # Detect platform
@@ -48,8 +47,8 @@ case "$OS" in
 esac
 
 ASSET="${BINARY_NAME}-${PLATFORM}"
-DOWNLOAD_URL="${GITHUB_BASE}/${ASSET}"
-CHECKSUM_URL="${GITHUB_BASE}/checksums.txt"
+DOWNLOAD_URL="${DL_BASE}/${ASSET}"
+CHECKSUM_URL="${DL_BASE}/checksums.txt"
 
 # ---------------------------------------------------------------------------
 # Choose install directory

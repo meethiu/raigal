@@ -240,7 +240,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: resolve-release
     permissions:
-      contents: write
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -277,7 +277,6 @@ jobs:
       - name: Package binary
         env:
           PKG_CACHE_PATH: /tmp/pkg-cache
-          RELEASE_TAG: ${{ needs.resolve-release.outputs.tag }}
         run: |
           pnpm exec pkg dist/cli.obf.js \
             --target ${{ matrix.target }} \
@@ -288,30 +287,47 @@ jobs:
         if: matrix.target == 'node22-linux-x64'
         run: ./${{ matrix.asset }} --version
 
-      - name: Upload binary to GitHub Release
+      - name: Upload binary to Cloudflare R2
         env:
-          GH_TOKEN: ${{ github.token }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           RELEASE_TAG: ${{ needs.resolve-release.outputs.tag }}
-        run: gh release upload "$RELEASE_TAG" "${{ matrix.asset }}" --clobber
+        run: |
+          aws s3 cp "${{ matrix.asset }}" \
+            "s3://raigal-binaries/${RELEASE_TAG}/${{ matrix.asset }}" \
+            --endpoint-url "https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com" \
+            --no-progress
+          # Also overwrite the "latest" pointer
+          aws s3 cp "${{ matrix.asset }}" \
+            "s3://raigal-binaries/latest/${{ matrix.asset }}" \
+            --endpoint-url "https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com" \
+            --no-progress
+
+      - name: Save binary as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+          retention-days: 1
 
   build-checksums:
-    name: Generate release checksums
+    name: Generate and publish checksums
     runs-on: ubuntu-latest
     needs: [resolve-release, build-binaries]
     permissions:
-      contents: write
+      contents: read
 
     steps:
-      - name: Download all binaries from release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.resolve-release.outputs.tag }}
-        run: |
-          mkdir binaries
-          gh release download "$RELEASE_TAG" \
-            --repo "$GITHUB_REPOSITORY" \
-            --pattern "raigal-*" \
-            --dir binaries
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve-release.outputs.sha }}
+
+      - name: Download all binaries from artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: binaries
+          merge-multiple: true
 
       - name: Generate checksums.txt
         run: |
@@ -320,9 +336,33 @@ jobs:
           echo "--- checksums.txt ---"
           cat checksums.txt
 
-      - name: Upload checksums to release
+      - name: Upload checksums + install scripts to Cloudflare R2
         env:
-          GH_TOKEN: ${{ github.token }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           RELEASE_TAG: ${{ needs.resolve-release.outputs.tag }}
-        run: gh release upload "$RELEASE_TAG" binaries/checksums.txt --clobber
+        run: |
+          ENDPOINT="https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com"
+
+          # Checksums - versioned + latest
+          aws s3 cp binaries/checksums.txt \
+            "s3://raigal-binaries/${RELEASE_TAG}/checksums.txt" \
+            --endpoint-url "$ENDPOINT" --no-progress
+          aws s3 cp binaries/checksums.txt \
+            "s3://raigal-binaries/latest/checksums.txt" \
+            --endpoint-url "$ENDPOINT" --no-progress
+
+          # Install scripts - always serve latest from root
+          aws s3 cp scripts/install.sh \
+            "s3://raigal-binaries/install.sh" \
+            --endpoint-url "$ENDPOINT" \
+            --content-type "text/plain; charset=utf-8" \
+            --no-progress
+          aws s3 cp scripts/install.ps1 \
+            "s3://raigal-binaries/install.ps1" \
+            --endpoint-url "$ENDPOINT" \
+            --content-type "text/plain; charset=utf-8" \
+            --no-progress
+
 
