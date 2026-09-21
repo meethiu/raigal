@@ -51,22 +51,7 @@
 		"scan:json": "pnpm build && node dist/cli.js scan . --json",
 		"check:licenses": "node scripts/check-licenses.mjs",
 		"release:guard": "node scripts/release-guard.mjs",
-		"quality": "pnpm typecheck && pnpm test && node dist/cli.js scan . --json",
-		"obfuscate": "node scripts/obfuscate.mjs",
-		"binary": "pnpm build && node scripts/obfuscate.mjs && pkg dist/cli.obf.js"
-	},
-	"pkg": {
-		"assets": [
-			"node_modules/knip/**/*",
-			"node_modules/typescript/lib/**/*"
-		],
-		"targets": [
-			"node22-macos-arm64",
-			"node22-macos-x64",
-			"node22-linux-x64",
-			"node22-win-x64"
-		],
-		"outputPath": "binaries"
+		"quality": "pnpm typecheck && pnpm test && node dist/cli.js scan . --json"
 	},
 	"keywords": [
 		"raigal",
@@ -132,9 +117,7 @@
 		"@types/micromatch": "^4.0.10",
 		"@types/node": "^26.4.0",
 		"@types/react": "^19.2.18",
-		"@yao-pkg/pkg": "^5.16.1",
 		"ink-testing-library": "^4.0.0",
-		"javascript-obfuscator": "^4.2.2",
 		"tsdown": "^0.22.14",
 		"vite": "^8.2.2",
 		"vitest": "^4.1.11"
