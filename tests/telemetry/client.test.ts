@@ -63,6 +63,7 @@ describe("track — distinct_id stitching", () => {
 		delete process.env.CI;
 		delete process.env.AISLOP_TELEMETRY_DRY_RUN;
 		delete process.env.XDG_STATE_HOME;
+		process.env.RAIGAL_POSTHOG_KEY = "test_key_for_unit_tests";
 		// resolveInstallIdPath() reads os.homedir(), which honors $HOME on POSIX.
 		tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), "aislop-distinct-"));
 		process.env.HOME = tmpHome;
@@ -115,6 +116,7 @@ describe("flushTelemetry — bounded flush (per-edit hook path)", () => {
 		delete process.env.CI;
 		delete process.env.AISLOP_TELEMETRY_DRY_RUN;
 		delete process.env.XDG_STATE_HOME;
+		process.env.RAIGAL_POSTHOG_KEY = "test_key_for_unit_tests";
 		tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), "aislop-flush-"));
 		process.env.HOME = tmpHome;
 		resetTelemetryForTests();

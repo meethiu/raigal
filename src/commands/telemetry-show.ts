@@ -29,8 +29,8 @@ export const telemetryShowCommand = async (options: TelemetryShowOptions = {}): 
 	}
 
 	process.stdout.write("\n");
-	process.stdout.write("  Raigal Telemetry & Outbox Status\n");
-	process.stdout.write("  ────────────────────────────────\n\n");
+	process.stdout.write("  Raigal Cloud Telemetry & Outbox Status\n");
+	process.stdout.write("  ──────────────────────────────────────\n\n");
 
 	process.stdout.write(`  Telemetry Sending:  ${status.enabled ? "enabled" : "disabled"}\n`);
 	process.stdout.write(`  Status:             ${status.reason}\n\n`);

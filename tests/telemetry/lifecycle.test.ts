@@ -21,9 +21,11 @@ describe("withCommandLifecycle", () => {
 	const originalEnv = { ...process.env };
 
 	beforeEach(() => {
+		delete process.env.RAIGAL_NO_TELEMETRY;
 		delete process.env.AISLOP_NO_TELEMETRY;
 		delete process.env.DO_NOT_TRACK;
 		delete process.env.CI;
+		process.env.RAIGAL_POSTHOG_KEY = "test_key_for_unit_tests";
 		process.env.AISLOP_TELEMETRY_DEBUG = "1";
 		process.env.AISLOP_TELEMETRY_DRY_RUN = "1";
 		resetTelemetryForTests();
