@@ -7,7 +7,7 @@ import { createPublicKey, type KeyObject } from "node:crypto";
 const EMBEDDED_PUBLIC_KEYS: Record<string, string> = {
 	rgl_key_2026_1:
 		"-----BEGIN PUBLIC KEY-----\n" +
-		"MCowBQYDK2VwAyEALvfssKGNSMxFzUG5pMgCuYTvnjPTgba7AidDdp7z7D0=\n" +
+		"MCowBQYDK2VwAyEA69B+1w8c4yJpEURW4Ps2b4BZcoIzeBg3jkCfIo2n2eM=\n" +
 		"-----END PUBLIC KEY-----",
 };
 
