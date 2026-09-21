@@ -1,5 +1,5 @@
 import { scanCommand } from "./commands/scan.js";
-import { loadConfig } from "./config/index.js";
+import { ConfigError, loadConfig } from "./config/index.js";
 import { flushTelemetry } from "./telemetry/index.js";
 
 export interface ScanFlags {
@@ -27,7 +27,16 @@ const wantsSarif = (flags: ScanFlags): boolean => Boolean(flags.sarif) || flags.
 const wantsJson = (flags: ScanFlags): boolean => Boolean(flags.json) || flags.format === "json";
 
 export const runScan = async (directory: string, flags: ScanFlags): Promise<void> => {
-	const config = loadConfig(directory);
+	let config: ReturnType<typeof loadConfig>;
+	try {
+		config = loadConfig(directory);
+	} catch (error) {
+		if (error instanceof ConfigError) {
+			process.stderr.write(`${error.message}\n`);
+			process.exit(2);
+		}
+		throw error;
+	}
 	const finalConfig = {
 		...config,
 		exclude: [...(config.exclude ?? []), ...(flags.exclude ?? [])],

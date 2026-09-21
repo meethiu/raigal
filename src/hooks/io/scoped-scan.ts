@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { requireEntitlement } from "../../cloud/gate.js";
-import { findConfigDir, loadConfig, RULES_FILE } from "../../config/index.js";
+import { ConfigError, findConfigDir, loadConfig, RULES_FILE } from "../../config/index.js";
 import { runEngines } from "../../engines/orchestrator.js";
 import type { Diagnostic, EngineContext, EngineName } from "../../engines/types.js";
 import { calculateScore } from "../../scoring/index.js";
@@ -63,7 +63,16 @@ export const runScopedScan = async (
 	if (!gate.ok) {
 		return { diagnostics: [], score: 100, rootDirectory };
 	}
-	const config = loadConfig(rootDirectory);
+	let config: ReturnType<typeof loadConfig>;
+	try {
+		config = loadConfig(rootDirectory);
+	} catch (error) {
+		if (error instanceof ConfigError) {
+			process.stderr.write(`raigal: invalid config in ${error.filePath}, skipping hook checks\n`);
+			return { diagnostics: [], score: 100, rootDirectory };
+		}
+		throw error;
+	}
 	const excludePatterns = [...config.exclude, ...readAislopIgnorePatterns(rootDirectory)];
 	const projectCandidates = listProjectFilesFromDisk(rootDirectory);
 	const projectSourceFiles = filterEnumeratedProjectFiles(

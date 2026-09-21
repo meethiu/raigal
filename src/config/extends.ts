@@ -132,7 +132,10 @@ export const loadConfigChain = (
 	options: LoadConfigChainOptions = {},
 ): Record<string, unknown> => {
 	const configDir = path.dirname(path.resolve(configPath));
-	const rootDir = path.resolve(options.rootDir ?? findGitRoot(configDir) ?? configDir);
+	const dirName = path.basename(configDir);
+	const projectDir =
+		dirName === ".raigal" || dirName === ".aislop" ? path.dirname(configDir) : configDir;
+	const rootDir = path.resolve(options.rootDir ?? findGitRoot(configDir) ?? projectDir);
 	return loadConfigChainInner(
 		configPath,
 		{

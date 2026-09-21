@@ -1,17 +1,18 @@
 import { existsSync } from "node:fs";
 import { Command, Option } from "commander";
 import { registerAgentCommand } from "./cli/agent-command.js";
-import { registerHookAliases, registerHookCommand } from "./cli/hook-command.js";
 import { registerCloudCommands } from "./cli/cloud-commands.js";
+import { registerHookAliases, registerHookCommand } from "./cli/hook-command.js";
 import { registerExtraCommands } from "./cli-extra-commands.js";
 import { FIX_AGENT_FLAGS, matchFixAgent } from "./cli-fix-agents.js";
 import { commaSeparatedParser, noFlagsPassed, runScan, type ScanFlags } from "./cli-scan.js";
+import { finishActiveRecorder, startRunRecorder } from "./cloud/recorder.js";
 import { ciCommand } from "./commands/ci.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { fixCommand } from "./commands/fix.js";
 import { initCommand } from "./commands/init.js";
 import { interactiveCommand } from "./commands/interactive.js";
-import { loadConfig } from "./config/index.js";
+import { ConfigError, loadConfig } from "./config/index.js";
 import {
 	ensureInstallId,
 	flushTelemetry,
@@ -27,7 +28,13 @@ import { maybeNotifyUpdate } from "./update-notifier.js";
 import { killActiveChildren } from "./utils/subprocess.js";
 import { APP_VERSION } from "./version.js";
 
-import { finishActiveRecorder, startRunRecorder } from "./cloud/recorder.js";
+const safeTelemetryConfig = (dir: string) => {
+	try {
+		return loadConfig(dir).telemetry;
+	} catch {
+		return undefined;
+	}
+};
 
 // Reap any scanner still running before exiting: on POSIX the tools are spawned
 // in their own process groups, so a Ctrl-C to the CLI's group would otherwise
@@ -41,10 +48,10 @@ process.on("SIGINT", handleTerminationSignal);
 process.on("SIGTERM", handleTerminationSignal);
 
 const fireInstalledOnce = (): void => {
-	if (isTelemetryDisabled(loadConfig(process.cwd()).telemetry)) return;
+	if (isTelemetryDisabled(safeTelemetryConfig(process.cwd()))) return;
 	const ensured = ensureInstallId(resolveInstallIdPath());
 	if (ensured.created) {
-		track({ event: "cli_installed", config: loadConfig(process.cwd()).telemetry });
+		track({ event: "cli_installed", config: safeTelemetryConfig(process.cwd()) });
 	}
 };
 
@@ -142,7 +149,17 @@ for (const a of FIX_AGENT_FLAGS) fixProgram.option(`--${a.flag}`, a.help);
 
 fixProgram.action(async (directory = ".", _flags, command) => {
 	const flags = command.optsWithGlobals() as Record<string, boolean | undefined>;
-	const { exitCode } = await fixCommand(directory, loadConfig(directory), {
+	let config: ReturnType<typeof loadConfig>;
+	try {
+		config = loadConfig(directory);
+	} catch (error) {
+		if (error instanceof ConfigError) {
+			process.stderr.write(`${error.message}\n`);
+			process.exit(2);
+		}
+		throw error;
+	}
+	const { exitCode } = await fixCommand(directory, config, {
 		verbose: Boolean(flags.verbose),
 		force: Boolean(flags.force),
 		safe: Boolean(flags.safe),
@@ -171,7 +188,7 @@ program
 	.action(async (directory = ".", _flags, command) => {
 		const flags = command.optsWithGlobals() as { strict?: boolean };
 		await withCommandLifecycle(
-			{ command: "init", config: loadConfig(directory).telemetry },
+			{ command: "init", config: safeTelemetryConfig(directory) },
 			async () => {
 				await initCommand(directory, { strict: Boolean(flags.strict) });
 				return { exitCode: 0 };
@@ -184,7 +201,7 @@ program
 	.description("Check toolchain coverage for this project")
 	.action(async (directory = ".") => {
 		await withCommandLifecycle(
-			{ command: "doctor", config: loadConfig(directory).telemetry },
+			{ command: "doctor", config: safeTelemetryConfig(directory) },
 			async () => {
 				await doctorCommand(directory);
 				return { exitCode: 0 };
@@ -213,7 +230,16 @@ ciProgram.action(async (directory = ".", _flags, command) => {
 		sarif?: boolean;
 		format?: string;
 	};
-	const config = loadConfig(directory);
+	let config: ReturnType<typeof loadConfig>;
+	try {
+		config = loadConfig(directory);
+	} catch (error) {
+		if (error instanceof ConfigError) {
+			process.stderr.write(`${error.message}\n`);
+			process.exit(2);
+		}
+		throw error;
+	}
 	const { exitCode } = await ciCommand(directory, config, {
 		changes: Boolean(flags.changes),
 		staged: Boolean(flags.staged),
@@ -226,6 +252,7 @@ ciProgram.action(async (directory = ".", _flags, command) => {
 		process.exitCode = exitCode;
 	}
 });
+
 registerExtraCommands(program);
 registerCloudCommands(program);
 registerHookCommand(program);
