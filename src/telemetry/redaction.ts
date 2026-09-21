@@ -1,4 +1,5 @@
 const SAFE_PROPERTY_NAMES: ReadonlySet<string> = new Set([
+	"cli_version",
 	"raigal_version",
 	"aislop_version",
 	"node_version",

@@ -1,4 +1,12 @@
-export { flushTelemetry, isTelemetryDisabled, track } from "./client.js";
+export {
+	flushTelemetry,
+	getPostHogKey,
+	getTelemetryStatus,
+	isTelemetryDisabled,
+	resetTelemetryForTests,
+	type TelemetryStatus,
+	track,
+} from "./client.js";
 export {
 	buildHookScanCompletedProps,
 	buildMcpToolCalledProps,

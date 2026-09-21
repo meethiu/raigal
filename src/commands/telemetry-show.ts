@@ -1,4 +1,5 @@
 import { getLastRecordedRun, loadOutboxRuns } from "../cloud/outbox.js";
+import { getTelemetryStatus } from "../telemetry/index.js";
 import { log } from "../ui/logger.js";
 
 export interface TelemetryShowOptions {
@@ -6,26 +7,36 @@ export interface TelemetryShowOptions {
 }
 
 export const telemetryShowCommand = async (options: TelemetryShowOptions = {}): Promise<void> => {
+	const status = getTelemetryStatus();
 	const lastRun = getLastRecordedRun();
 	const outbox = loadOutboxRuns();
 
 	if (options.json) {
-		console.log(
-			JSON.stringify(
+		process.stdout.write(
+			`${JSON.stringify(
 				{
+					enabled: status.enabled,
+					reason: status.reason,
+					event: status.event,
 					last_run: lastRun,
 					pending_outbox_count: outbox.length,
 				},
 				null,
 				2,
-			),
+			)}\n`,
 		);
 		return;
 	}
 
 	process.stdout.write("\n");
-	process.stdout.write("  Raigal Cloud Telemetry & Outbox Status\n");
-	process.stdout.write("  ─────────────────────────────────────\n\n");
+	process.stdout.write("  Raigal Telemetry & Outbox Status\n");
+	process.stdout.write("  ────────────────────────────────\n\n");
+
+	process.stdout.write(`  Telemetry Sending:  ${status.enabled ? "enabled" : "disabled"}\n`);
+	process.stdout.write(`  Status:             ${status.reason}\n\n`);
+
+	process.stdout.write("  Sample Event Payload:\n");
+	process.stdout.write(`${JSON.stringify(status.event, null, 2)}\n\n`);
 
 	if (!lastRun) {
 		log.info("No recorded runs found in local outbox.");

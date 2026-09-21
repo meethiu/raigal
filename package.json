@@ -50,8 +50,9 @@
 		"scan:include": "pnpm build && node dist/cli.js scan . --include src --include tests",
 		"scan:json": "pnpm build && node dist/cli.js scan . --json",
 		"check:licenses": "node scripts/check-licenses.mjs",
+		"check:tarball-keys": "node scripts/check-tarball-keys.mjs",
 		"release:guard": "node scripts/release-guard.mjs",
-		"quality": "pnpm typecheck && pnpm test && node dist/cli.js scan . --json"
+		"quality": "pnpm typecheck && pnpm test && node scripts/check-tarball-keys.mjs && node dist/cli.js scan . --json"
 	},
 	"keywords": [
 		"raigal",

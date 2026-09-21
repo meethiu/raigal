@@ -4,12 +4,16 @@ import { detectInstallChannel, isCiEnv } from "./env.js";
 import { ensureInstallId, resolveInstallIdPath } from "./identity.js";
 import { redactProperties } from "./redaction.js";
 
-const POSTHOG_HOST = process.env.RAIGAL_POSTHOG_HOST ?? "https://eu.i.posthog.com";
-const POSTHOG_KEY = process.env.RAIGAL_POSTHOG_KEY ?? "";
+export const getPostHogHost = (): string =>
+	process.env.RAIGAL_POSTHOG_HOST ?? process.env.POSTHOG_HOST ?? "https://eu.i.posthog.com";
+
+export const getPostHogKey = (): string =>
+	process.env.RAIGAL_POSTHOG_KEY ?? process.env.POSTHOG_KEY ?? "";
+
 const SCHEMA_VERSION = "v2";
 const REQUEST_TIMEOUT_MS = 3000;
 
-type EventName =
+export type EventName =
 	| "cli_installed"
 	| "cli_command_started"
 	| "cli_command_completed"
@@ -21,12 +25,14 @@ export interface TelemetryConfig {
 	enabled?: boolean;
 }
 
+const isOptedOut = (val?: string): boolean => val === "1" || val?.toLowerCase() === "true";
+
 export const isTelemetryDisabled = (config?: TelemetryConfig): boolean => {
 	const env = process.env;
 	if (
-		env.RAIGAL_NO_TELEMETRY === "1" ||
-		env.AISLOP_NO_TELEMETRY === "1" ||
-		env.DO_NOT_TRACK === "1"
+		isOptedOut(env.RAIGAL_NO_TELEMETRY) ||
+		isOptedOut(env.AISLOP_NO_TELEMETRY) ||
+		isOptedOut(env.DO_NOT_TRACK)
 	)
 		return true;
 	if (config?.enabled === false) return true;
@@ -42,8 +48,8 @@ const pendingRequests = new Set<Promise<unknown>>();
 let cachedInstallId: string | null = null;
 let installCreated = false;
 
-const baseProperties = (installId: string): Record<string, unknown> => ({
-	aislop_version: APP_VERSION,
+export const baseProperties = (installId: string): Record<string, unknown> => ({
+	cli_version: APP_VERSION,
 	node_version: process.version,
 	os: os.platform(),
 	arch: os.arch(),
@@ -64,7 +70,8 @@ interface TrackResult {
 }
 
 export const track = (input: TrackInput): TrackResult => {
-	if (isTelemetryDisabled(input.config)) return { installCreated: false };
+	const key = getPostHogKey().trim();
+	if (!key || isTelemetryDisabled(input.config)) return { installCreated: false };
 
 	if (cachedInstallId == null) {
 		const ensured = ensureInstallId(resolveInstallIdPath());
@@ -79,8 +86,8 @@ export const track = (input: TrackInput): TrackResult => {
 		const compact = JSON.stringify({ event: input.event, properties: clean });
 		process.stderr.write(`[telemetry] ${compact}\n`);
 		if (dropped.length > 0) {
-			for (const key of dropped) {
-				process.stderr.write(`[telemetry] dropped non-allowlisted property: ${key}\n`);
+			for (const prop of dropped) {
+				process.stderr.write(`[telemetry] dropped non-allowlisted property: ${prop}\n`);
 			}
 		}
 	}
@@ -93,14 +100,14 @@ export const track = (input: TrackInput): TrackResult => {
 	}
 
 	const payload = {
-		api_key: POSTHOG_KEY,
+		api_key: key,
 		event: input.event,
 		distinct_id: cachedInstallId,
 		properties: clean,
 		timestamp: new Date().toISOString(),
 	};
 
-	const request = fetch(`${POSTHOG_HOST}/capture/`, {
+	const request = fetch(`${getPostHogHost()}/capture/`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(payload),
@@ -123,8 +130,6 @@ export const flushTelemetry = async (timeoutMs?: number): Promise<void> => {
 		await all;
 		return;
 	}
-	// Bounded flush for latency-sensitive callers (per-edit hooks): give the
-	// in-flight request a brief window, but never block the caller past the cap.
 	await Promise.race([all, new Promise((resolve) => setTimeout(resolve, timeoutMs))]);
 };
 
@@ -132,4 +137,50 @@ export const resetTelemetryForTests = (): void => {
 	cachedInstallId = null;
 	installCreated = false;
 	pendingRequests.clear();
+};
+
+export interface TelemetryStatus {
+	enabled: boolean;
+	event: {
+		event: EventName;
+		distinct_id: string;
+		properties: Record<string, unknown>;
+	};
+	reason: string;
+}
+
+export const getTelemetryStatus = (config?: TelemetryConfig): TelemetryStatus => {
+	const disabled = isTelemetryDisabled(config);
+	const key = getPostHogKey().trim();
+	const enabled = !disabled && Boolean(key);
+
+	if (cachedInstallId == null) {
+		const ensured = ensureInstallId(resolveInstallIdPath());
+		cachedInstallId = ensured.installId;
+		installCreated = ensured.created;
+	}
+
+	const sampleProperties = redactProperties({
+		...baseProperties(cachedInstallId),
+		command: "scan",
+	}).clean;
+
+	const sampleEvent = {
+		event: "cli_command_completed" as EventName,
+		distinct_id: cachedInstallId,
+		properties: sampleProperties,
+	};
+
+	let reason = "Telemetry sending is enabled";
+	if (disabled) {
+		reason = "Telemetry is disabled by opt-out variable, CI, or config";
+	} else if (!key) {
+		reason = "Telemetry is off: no PostHog API key is set";
+	}
+
+	return {
+		enabled,
+		event: sampleEvent,
+		reason,
+	};
 };
