@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## 1.0.0 (2026-09-22)
+
+Initial stable release under `@methiu/raigal`.
+- Zero-token GitHub Actions OIDC entitlement and automated CI quality gate.
+- Scoped npm package distribution with automated prepack build validation.
+- Support for 10 language targets, unified formatting, linting, code-quality, AI-pattern, architecture, and security checks.
+
 ## 0.16.1 (2026-09-09)
 
 Maintenance release. Three rule fixes from contributors, each removing findings that should never have fired, one fix that closes a matching gap in the other direction, plus dependency patches.
