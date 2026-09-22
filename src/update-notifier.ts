@@ -6,7 +6,7 @@ import { highlightAislop } from "./ui/brand.js";
 import { theme } from "./ui/theme.js";
 import { APP_VERSION } from "./version.js";
 
-const REGISTRY_URL = "https://registry.npmjs.org/raigal/latest";
+const REGISTRY_URL = "https://registry.npmjs.org/@methiu/raigal/latest";
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 2000;
 const CACHE_BASENAME = "update_check.json";
@@ -54,8 +54,8 @@ export const formatUpdateNotice = (current: string, latest: string): string =>
 	[
 		"",
 		`Update available: ${current} -> ${latest}.`,
-		highlightAislop("Upgrade: npm i -g raigal@latest", theme),
-		highlightAislop("One-off: npx raigal@latest", theme),
+		highlightAislop("Upgrade: npm i -g @methiu/raigal@latest", theme),
+		highlightAislop("One-off: npx @methiu/raigal@latest", theme),
 		"",
 	].join("\n");
 

@@ -33,8 +33,8 @@ export const buildUpdateStatusRender = (input: UpdateStatusInput): string => {
 		"",
 		renderDisplaySection("Commands"),
 		...renderDisplayCommandRows([
-			{ label: "Upgrade", command: "npm i -g raigal@latest" },
-			{ label: "One-off", command: "npx raigal@latest" },
+			{ label: "Upgrade", command: "npm i -g @methiu/raigal@latest" },
+			{ label: "One-off", command: "npx @methiu/raigal@latest" },
 		]),
 	];
 	return `${lines.join("\n")}\n`;

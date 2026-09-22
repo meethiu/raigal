@@ -118,7 +118,7 @@ interface OutputCapture {
 // long synchronous pass (e.g. aislop's per-file engine work) never drains,
 // so the child would stall at zero CPU; a file write needs no parent at all.
 const createOutputCapture = (): OutputCapture => {
-	const tempDir = mkdtempSync(path.join(tmpdir(), "aislop-"));
+	const tempDir = mkdtempSync(path.join(tmpdir(), "raigal-"));
 	const stdoutPath = path.join(tempDir, "stdout.log");
 	const stderrPath = path.join(tempDir, "stderr.log");
 	let outFd: number | undefined;
@@ -159,7 +159,7 @@ export const isMissingToolError = (error: unknown): boolean =>
 // `--json`/`--sarif` output, which is a single machine-readable blob on stdout.
 export const warnSubprocessFailure = (tool: string, error: unknown): void => {
 	const message = error instanceof Error ? error.message : String(error);
-	console.error(`aislop: ${tool} failed to run and was skipped: ${message}`);
+	console.error(`raigal: ${tool} failed to run and was skipped: ${message}`);
 };
 
 export const runSubprocess = (

@@ -24,8 +24,7 @@ describe("writeGithubWorkflow", () => {
 		const writtenPath = path.join(tmpDir, result.status === "written" ? result.relativePath : ".github/workflows/raigal.yml");
 		const body = fs.readFileSync(writtenPath, "utf-8");
 		expect(body).toMatch(/name:\s+(raigal|aislop)/);
-		expect(body).toMatch(/uses:\s+(?:scanaislop|meethiu)\/(raigal|aislop)@v1/);
-		expect(body).toContain("version: latest");
+		expect(body).toMatch(/(?:uses:\s+(?:scanaislop|meethiu)\/(raigal|aislop)@v1|npx\s+--yes\s+@methiu\/raigal@latest\s+ci)/);
 	});
 
 	it("returns declined (no write) when disabled", () => {

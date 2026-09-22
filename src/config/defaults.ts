@@ -77,14 +77,19 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: meethiu/raigal@v1
+      - uses: actions/setup-node@v4
         with:
-          version: latest
+          node-version: 22
+      - run: npx --yes @methiu/raigal@latest ci .
 `;
 
 export const DEFAULT_RULES_YAML = `# Architecture rules (BYO)

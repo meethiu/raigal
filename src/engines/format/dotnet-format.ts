@@ -59,7 +59,7 @@ export const parseDotnetFormatReport = (json: string, rootDirectory: string): Di
 			rule: "csharp-formatting",
 			severity: "warning",
 			message: "C# file is not formatted correctly",
-			help: "Run `aislop fix` to auto-format with dotnet format",
+			help: "Run `raigal fix` to auto-format with dotnet format",
 			line: 0,
 			column: 0,
 			category: "Format",

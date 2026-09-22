@@ -64,8 +64,8 @@ describe("formatUpdateNotice", () => {
 		const notice = formatUpdateNotice("0.9.4", "0.10.1");
 		expect(notice).toContain("0.9.4");
 		expect(notice).toContain("0.10.1");
-		expect(notice).toMatch(/npm i -g (raigal|aislop)@latest/);
-		expect(notice).toMatch(/npx (raigal|aislop)@latest/);
+		expect(notice).toMatch(/npm i -g (@methiu\/)?(raigal|aislop)@latest/);
+		expect(notice).toMatch(/npx (@methiu\/)?(raigal|aislop)@latest/);
 	});
 });
 

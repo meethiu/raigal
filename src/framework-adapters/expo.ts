@@ -41,12 +41,12 @@ const withRaigalExpo = <TConfig extends ExpoConfigLike>(
 	const extra = {
 		...config.extra,
 		raigal: {
-			command: "npx --yes raigal@latest ci",
+			command: "npx --yes @methiu/raigal@latest ci",
 			hook: "raigal hook install",
 			enabled: true,
 		},
 		aislop: {
-			command: "npx --yes raigal@latest ci",
+			command: "npx --yes @methiu/raigal@latest ci",
 			hook: "raigal hook install",
 			enabled: true,
 		},

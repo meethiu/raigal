@@ -99,6 +99,20 @@ describe("Task 5: Fail-closed configuration on exit code 2", () => {
 		expect(result.stderr).toMatch(/maxFunctionLoc/i);
 	});
 
+	it("CLI scan exits with code 2 on actual broken YAML syntax", () => {
+		writeConfig(".raigal/config.yaml", "engines:\n  [invalid yaml\n");
+		writeConfig("index.ts", "export const x = 1;\n");
+
+		const result = spawnSync("node", [CLI_PATH, "scan", "."], {
+			cwd: tmpDir,
+			encoding: "utf-8",
+		});
+
+		expect(result.status).toBe(2);
+		expect(result.stderr).toMatch(/Failed to parse/i);
+		expect(result.stderr).toMatch(/config\.yaml/);
+	});
+
 	it("CLI ci exits with code 2 on unknown config key", () => {
 		writeConfig(".raigal/config.json", JSON.stringify({ engins: { format: false } }));
 		writeConfig("index.ts", "export const x = 1;\n");

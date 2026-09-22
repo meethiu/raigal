@@ -16,7 +16,7 @@ export { chunkFilePaths };
 // the chunks concurrently is the only way a large tree uses more than one core;
 // serially, a tree the size of llvm's spends most of a scan in this one engine.
 // Same width as cppcheck's CPPCHECK_JOB_COUNT (which buys its parallelism inside
-// a single process instead): leave two cores free, since aislop runs its own
+// a single process instead): leave two cores free, since raigal runs its own
 // engines concurrently.
 const CLANG_FORMAT_CHUNK_CONCURRENCY = Math.max(1, os.availableParallelism() - 2);
 
@@ -35,7 +35,7 @@ const formattingDiagnostic = (relativeFilePath: string): Diagnostic => ({
 	rule: "cpp-formatting",
 	severity: "warning",
 	message: "C/C++ file is not formatted correctly",
-	help: "Run `aislop fix` to auto-format with clang-format",
+	help: "Run `raigal fix` to auto-format with clang-format",
 	line: 0,
 	column: 0,
 	category: "Format",

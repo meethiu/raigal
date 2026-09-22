@@ -137,7 +137,7 @@ export const verifyEntitlementJwt = (
 
 	if (!isVersionAtLeast(APP_VERSION, claims.min_cli_version)) {
 		throw new JwtVerificationError(
-			`CLI version ${APP_VERSION} is below required minimum ${claims.min_cli_version}. Run "raigal update" or "npm install -g raigal@latest".`,
+			`CLI version ${APP_VERSION} is below required minimum ${claims.min_cli_version}. Run "raigal update" or "npm install -g @methiu/raigal@latest".`,
 			"cli_version_unsupported",
 		);
 	}

@@ -75,10 +75,7 @@ export const loadConfig = (directory: string): AislopConfig => {
 			throw error;
 		}
 		const msg = error instanceof Error ? error.message : String(error);
-		process.stderr.write(
-			`  ⚠ Failed to parse ${configPath}: ${msg}\n  ⚠ Using default configuration.\n`,
-		);
-		return DEFAULT_CONFIG;
+		throw new ConfigError(configPath, `Failed to parse ${configPath}: ${msg}`);
 	}
 };
 

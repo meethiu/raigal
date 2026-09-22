@@ -103,6 +103,7 @@ describe("home", () => {
 		expect(out).toContain(".raigalignore");
 		expect(out).toContain("Run raigal <command> --help");
 		expect(out).not.toContain("--all");
+		expect(out).not.toContain("aislop");
 
 		const flagLines = out.split("\n").filter((line) => line.trimStart().startsWith("flags:"));
 		expect(flagLines.length).toBeGreaterThan(0);

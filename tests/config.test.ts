@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config/defaults.js";
-import { CONFIG_DIR, CONFIG_FILE, findConfigDir, loadConfig } from "../src/config/index.js";
+import { CONFIG_DIR, CONFIG_FILE, ConfigError, findConfigDir, loadConfig } from "../src/config/index.js";
 import { parseConfig } from "../src/config/schema.js";
 
 // ─── parseConfig ──────────────────────────────────────────────────────────────
@@ -292,12 +292,11 @@ describe("loadConfig", () => {
 		expect(result.quality.maxFileLoc).toBe(DEFAULT_CONFIG.quality.maxFileLoc);
 	});
 
-	it("returns DEFAULT_CONFIG when config.yml contains invalid YAML", () => {
+	it("throws ConfigError when config.yml contains invalid YAML", () => {
 		const aislopDir = path.join(tmpDir, CONFIG_DIR);
 		fs.mkdirSync(aislopDir);
 		fs.writeFileSync(path.join(aislopDir, CONFIG_FILE), "{ invalid yaml: [", "utf-8");
-		const result = loadConfig(tmpDir);
-		expect(result).toEqual(DEFAULT_CONFIG);
+		expect(() => loadConfig(tmpDir)).toThrow(ConfigError);
 	});
 
 	it("returns DEFAULT_CONFIG when config.yml is empty", () => {

@@ -204,14 +204,14 @@ export const renderSummary = (input: SummaryInput, deps: SummaryDeps = {}): stri
 
 export const renderStarCta = (deps: SummaryDeps = {}): string => {
 	const t = deps.theme ?? defaultTheme;
-	const repository = terminalLink("https://github.com/meethiu/raigal");
-	return `\n ${style(t, "muted", `★ Found this useful? Star us at ${repository}`)}\n`;
+	const repository = terminalLink("https://raigal.dev");
+	return `\n ${style(t, "muted", `★ Found this useful? Consider purchasing this software at ${repository}`)}\n`;
 };
 
 export const renderTeamCta = (deps: SummaryDeps = {}): string => {
 	const t = deps.theme ?? defaultTheme;
 	const href = terminalLink("https://raigal.dev/contact?intent=team-baseline");
-	return `\n ${style(t, "muted", `→ Using aislop with a team? Get a 14-day team baseline at ${href}`)}\n`;
+	return `\n ${style(t, "muted", `→ Using raigal with a team? Get a 14-day team baseline at ${href}`)}\n`;
 };
 
 export const renderCleanRun = (

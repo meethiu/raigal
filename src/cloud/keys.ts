@@ -47,7 +47,3 @@ export const registerPublicKeyForTests = (kid: string, pem: string): void => {
 		throw new Error(`Invalid test public key for kid ${kid}: ${String(err)}`);
 	}
 };
-
-export const clearPublicKeyCacheForTests = (): void => {
-	keyObjectCache.clear();
-};

@@ -293,11 +293,12 @@ export class ConfigError extends Error {
 	readonly filePath: string;
 	readonly issues: string[];
 
-	constructor(filePath: string, issues: string[]) {
-		super(formatConfigError(filePath, issues));
+	constructor(filePath: string, issues: string[] | string) {
+		const issueList = Array.isArray(issues) ? issues : [issues];
+		super(formatConfigError(filePath, issueList));
 		this.name = "ConfigError";
 		this.filePath = filePath;
-		this.issues = issues;
+		this.issues = issueList;
 	}
 }
 

@@ -50,7 +50,7 @@ describe("framework adapters", () => {
 			"aislop:hook": "raigal hook install",
 			"aislop:scan": "raigal scan",
 		});
-		expect(createRaigalCiWorkflow()).toContain("npx --yes raigal@latest ci");
+		expect(createRaigalCiWorkflow()).toContain("npx --yes @methiu/raigal@latest ci");
 	});
 
 	it("builds an Astro integration with opt-in build execution", async () => {
@@ -70,12 +70,12 @@ describe("framework adapters", () => {
 
 		expect(config.extra?.apiUrl).toBe("https://example.test");
 		expect(config.extra?.raigal).toEqual({
-			command: "npx --yes raigal@latest ci",
+			command: "npx --yes @methiu/raigal@latest ci",
 			enabled: true,
 			hook: "raigal hook install",
 		});
 		expect(config.extra?.aislop).toEqual({
-			command: "npx --yes raigal@latest ci",
+			command: "npx --yes @methiu/raigal@latest ci",
 			enabled: true,
 			hook: "raigal hook install",
 		});

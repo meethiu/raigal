@@ -169,24 +169,30 @@ export const getEntitlement = async (): Promise<ResolvedEntitlement> => {
 		};
 	}
 
-	// If no credential exists and no cache exists, block
+	// If no credential exists, check if GitHub Actions OIDC token is available
+	let oidcToken: string | undefined;
 	if (!activeToken) {
-		if (cached && cachedClaims) {
-			return {
-				jwt: cached.entitlement,
-				claims: cachedClaims,
-				fromCache: true,
-			};
+		oidcToken = await fetchGitHubOidcToken();
+		if (!oidcToken) {
+			if (cached && cachedClaims) {
+				return {
+					jwt: cached.entitlement,
+					claims: cachedClaims,
+					fromCache: true,
+				};
+			}
+			throw new MissingCredentialError(
+				'Raigal is proprietary software available to approved organizations. Run "raigal login", set RAIGAL_TOKEN, or enable id-token: write in GitHub Actions.',
+			);
 		}
-		throw new MissingCredentialError(
-			'Raigal is proprietary software available to approved organizations. Run "raigal login" or set RAIGAL_TOKEN.',
-		);
+	} else {
+		oidcToken = await fetchGitHubOidcToken();
 	}
 
 	// Attempt online refresh
 	try {
-		const oidcToken = await fetchGitHubOidcToken();
-		const response = await fetchEntitlementFromApi(activeToken.token, oidcToken);
+		const tokenToPass = activeToken?.token ?? "";
+		const response = await fetchEntitlementFromApi(tokenToPass, oidcToken);
 		const claims = verifyEntitlementJwt(response.entitlement, { nowSeconds: now });
 
 		saveCachedEntitlement(response.entitlement, response.refresh_after);

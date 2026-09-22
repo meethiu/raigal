@@ -54,7 +54,7 @@ const resolveScope = (flags: { global?: boolean; project?: boolean }): "global" 
 const promptForUninstall = async (): Promise<AgentName[] | null> => {
 	const installed = detectInstalledAgents({ home: os.homedir(), cwd: process.cwd() });
 	if (installed.length === 0) {
-		log.warn("No aislop hooks installed. Nothing to uninstall.");
+		log.warn("No raigal hooks installed. Nothing to uninstall.");
 		return [];
 	}
 	const picked = await promptAgentSelection("uninstall", { installed });

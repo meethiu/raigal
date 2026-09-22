@@ -115,12 +115,12 @@ export const pollDeviceToken = async (deviceCode: string): Promise<DeviceTokenPo
 };
 
 export const fetchEntitlementFromApi = async (
-	token: string,
+	token?: string,
 	oidcToken?: string,
 ): Promise<EntitlementResponseType> => {
 	const data = await requestApi<unknown>("/v1/entitlement", {
 		method: "POST",
-		token,
+		token: token || undefined,
 		oidcToken,
 	});
 	return EntitlementResponse.parse(data);

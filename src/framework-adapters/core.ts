@@ -152,7 +152,7 @@ export const createRaigalPackageScripts = (
 };
 
 export const createRaigalCiWorkflow = (
-	packageManagerCommand = "npx --yes raigal@latest ci",
+	packageManagerCommand = "npx --yes @methiu/raigal@latest ci",
 ): string =>
 	[
 		"name: raigal",
@@ -162,11 +162,18 @@ export const createRaigalCiWorkflow = (
 		"  push:",
 		"    branches: [main]",
 		"",
+		"permissions:",
+		"  contents: read",
+		"  id-token: write",
+		"",
 		"jobs:",
 		"  quality-gate:",
 		"    runs-on: ubuntu-latest",
 		"    steps:",
 		"      - uses: actions/checkout@v4",
+		"      - uses: actions/setup-node@v4",
+		"        with:",
+		"          node-version: 22",
 		`      - run: ${packageManagerCommand}`,
 		"",
 	].join("\n");

@@ -14,7 +14,6 @@ import type {
 	Step,
 } from "./contract.js";
 
-export type SeverityType = z.infer<typeof Severity>;
 export type FindingType = z.infer<typeof Finding>;
 export type RepoRefType = z.infer<typeof RepoRef>;
 export type StepType = z.infer<typeof Step>;

@@ -40,6 +40,41 @@ describe("entitlement resolver & caching", () => {
 		await expect(getEntitlement()).rejects.toThrow(MissingCredentialError);
 	});
 
+	it("fetches entitlement via GitHub Actions OIDC when no credential exists", async () => {
+		process.env.ACTIONS_ID_TOKEN_REQUEST_URL = "https://actions.github.test/token?param=1";
+		process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN = "test-runner-token";
+
+		try {
+			const claims = createValidTestClaims();
+			const jwt = signTestEntitlementJwt(claims);
+			const refreshAfter = Math.floor(Date.now() / 1000) + 43200;
+
+			const fetchMock = vi.fn(async (url: string | URL | Request) => {
+				const urlStr = url.toString();
+				if (urlStr.includes("actions.github.test")) {
+					return new Response(JSON.stringify({ value: "mock.github.oidc.token" }), {
+						status: 200,
+						headers: { "Content-Type": "application/json" },
+					});
+				}
+				return new Response(JSON.stringify({ entitlement: jwt, refresh_after: refreshAfter }), {
+					status: 200,
+					headers: { "Content-Type": "application/json" },
+				});
+			});
+			vi.stubGlobal("fetch", fetchMock);
+
+			const result = await getEntitlement();
+			expect(result.fromCache).toBe(false);
+			expect(result.jwt).toBe(jwt);
+			expect(result.claims.sub).toBe("org_test123");
+			expect(fetchMock).toHaveBeenCalledTimes(2);
+		} finally {
+			delete process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
+			delete process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+		}
+	});
+
 	it("fetches entitlement online, verifies offline, and caches it", async () => {
 		saveStoredCredentials({ token: "rgl_live_valid_key" });
 

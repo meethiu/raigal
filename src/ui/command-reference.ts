@@ -1,5 +1,5 @@
 import { APP_VERSION } from "../version.js";
-import { highlightAislop } from "./brand.js";
+import { highlightRaigal } from "./brand.js";
 import {
 	COMMAND_REFERENCE,
 	type CommandReference,
@@ -21,25 +21,19 @@ interface CommandGroup {
 const MAX_FLAG_LINE_WIDTH = 120;
 
 const commandGroupLabel = (command: string): string => {
-	if (command.startsWith("raigal agent") || command.startsWith("aislop agent"))
-		return "Local Agent";
-	if (command.startsWith("raigal scan") || command.startsWith("aislop scan"))
-		return "Core Workflow";
-	if (command.startsWith("raigal fix") || command.startsWith("aislop fix")) return "Core Workflow";
-	if (command.startsWith("raigal ci") || command.startsWith("aislop ci")) return "Core Workflow";
-	if (command.startsWith("raigal hook") || command.startsWith("aislop hook")) return "Hooks";
-	if (command === "raigal hooks" || command === "aislop hooks") return "Hooks";
-	if (command.startsWith("raigal install") || command.startsWith("aislop install")) return "Hooks";
-	if (command.startsWith("raigal uninstall") || command.startsWith("aislop uninstall"))
-		return "Hooks";
-	if (command.startsWith("raigal init") || command.startsWith("aislop init"))
-		return "Project Setup";
-	if (command.startsWith("raigal doctor") || command.startsWith("aislop doctor"))
-		return "Project Setup";
-	if (command.startsWith("raigal rules") || command.startsWith("aislop rules"))
-		return "Project Setup";
-	if (command.startsWith("raigal badge") || command.startsWith("aislop badge")) return "Reporting";
-	if (command.startsWith("raigal trend") || command.startsWith("aislop trend")) return "Reporting";
+	if (command.startsWith("raigal agent")) return "Local Agent";
+	if (command.startsWith("raigal scan")) return "Core Workflow";
+	if (command.startsWith("raigal fix")) return "Core Workflow";
+	if (command.startsWith("raigal ci")) return "Core Workflow";
+	if (command.startsWith("raigal hook")) return "Hooks";
+	if (command === "raigal hooks") return "Hooks";
+	if (command.startsWith("raigal install")) return "Hooks";
+	if (command.startsWith("raigal uninstall")) return "Hooks";
+	if (command.startsWith("raigal init")) return "Project Setup";
+	if (command.startsWith("raigal doctor")) return "Project Setup";
+	if (command.startsWith("raigal rules")) return "Project Setup";
+	if (command.startsWith("raigal badge")) return "Reporting";
+	if (command.startsWith("raigal trend")) return "Reporting";
 	return "General";
 };
 
@@ -92,7 +86,7 @@ const renderCommandGroup = (group: CommandGroup, commandWidth: number): string[]
 	const lines = ["", style(theme, "section", sentenceCase(group.label))];
 	for (const item of group.items) {
 		lines.push(
-			` ${highlightAislop(padEnd(item.command, commandWidth), theme)}  ${style(theme, "fg", item.summary)}`,
+			` ${highlightRaigal(padEnd(item.command, commandWidth), theme)}  ${style(theme, "fg", item.summary)}`,
 		);
 		if (item.flags?.length) {
 			for (const line of wrapFlags(item.flags, commandWidth)) lines.push(renderFlagLine(line));

@@ -1,6 +1,9 @@
 {
-	"name": "raigal",
+	"name": "@methiu/raigal",
 	"version": "0.16.1",
+	"publishConfig": {
+		"access": "public"
+	},
 	"description": "Catch the slop AI coding agents leave in your code: narrative comments, swallowed exceptions, as-any casts, dead code, oversized functions. 50+ rules across 10 language targets (TypeScript, JavaScript, Expo / React Native, Python, Go, Rust, Ruby, PHP, C#, C/C++). Sub-second, deterministic, no LLM at runtime.",
 	"type": "module",
 	"bin": {

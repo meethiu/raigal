@@ -52,4 +52,4 @@ runs:
         npm_exec_dir="$(mktemp -d)"
         trap 'rm -rf "$npm_exec_dir"' EXIT
         cd "$npm_exec_dir"
-        npm exec --yes --package "raigal@${RAIGAL_VERSION}" -- raigal "${args[@]}"
+        npm exec --yes --package "@methiu/raigal@${RAIGAL_VERSION}" -- raigal "${args[@]}"

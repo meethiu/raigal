@@ -356,7 +356,7 @@ const main = async () => {
 			warn(`  - ${failure}`);
 		}
 		warn(
-			"aislop will still run, but coverage for those tools may be reduced until installation succeeds.",
+			"raigal will still run, but coverage for those tools may be reduced until installation succeeds.",
 		);
 		process.exitCode = 1;
 		return;
@@ -370,8 +370,8 @@ const main = async () => {
 const printNextSteps = () => {
 	if (process.env.CI) return;
 	info("Installed. Next:");
-	info("  aislop scan     score this repo for AI slop");
-	info("  aislop agent    run a coding agent and auto-scan its work");
+	info("  raigal scan     score this repo for AI slop");
+	info("  raigal agent    run a coding agent and auto-scan its work");
 	info("  Gate every PR for your team, free → https://raigal.dev");
 };
 

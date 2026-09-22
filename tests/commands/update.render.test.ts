@@ -11,8 +11,8 @@ describe("update render", () => {
 		expect(out).toMatch(/Latest\s+0\.10\.2/);
 		expect(out).toMatch(/State\s+(raigal|aislop) is up to date\./);
 		expect(out).toContain("Commands");
-		expect(out).toMatch(/Upgrade\s+npm i -g (raigal|aislop)@latest/);
-		expect(out).toMatch(/One-off\s+npx (raigal|aislop)@latest/);
+		expect(out).toMatch(/Upgrade\s+npm i -g (@methiu\/)?(raigal|aislop)@latest/);
+		expect(out).toMatch(/One-off\s+npx (@methiu\/)?(raigal|aislop)@latest/);
 
 		const lines = out.split("\n");
 		const currentLine = lines.find((line) => line.includes("Current"));
@@ -26,7 +26,7 @@ describe("update render", () => {
 		expect(out).toMatch(/Current\s+0\.10\.1/);
 		expect(out).toMatch(/Latest\s+0\.10\.2/);
 		expect(out).toMatch(/State\s+update available \(0\.10\.1 -> 0\.10\.2\)\./);
-		expect(out).toMatch(/Upgrade\s+npm i -g (raigal|aislop)@latest/);
+		expect(out).toMatch(/Upgrade\s+npm i -g (@methiu\/)?(raigal|aislop)@latest/);
 	});
 
 	it("still shows current when npm cannot be reached", () => {
@@ -35,6 +35,6 @@ describe("update render", () => {
 		expect(out).toMatch(/Current\s+0\.10\.2/);
 		expect(out).toMatch(/Latest\s+unavailable/);
 		expect(out).toMatch(/State\s+could not reach the npm registry/);
-		expect(out).toMatch(/One-off\s+npx (raigal|aislop)@latest/);
+		expect(out).toMatch(/One-off\s+npx (@methiu\/)?(raigal|aislop)@latest/);
 	});
 });
