@@ -17,7 +17,7 @@ export class ApiError extends Error {
 	}
 }
 
-export const getApiBaseUrl = (): string =>
+const getApiBaseUrl = (): string =>
 	process.env.RAIGAL_API_URL?.trim().replace(/\/+$/, "") || "https://app.raigal.dev";
 
 interface RequestOptions {

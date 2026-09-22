@@ -96,11 +96,15 @@ try {
 	if (tarballPath && fs.existsSync(tarballPath)) {
 		try {
 			fs.rmSync(tarballPath, { force: true });
-		} catch {}
+		} catch {
+			// Best effort: cleanup failures must not mask the original error.
+		}
 	}
 	if (extractDir && fs.existsSync(extractDir)) {
 		try {
 			fs.rmSync(extractDir, { recursive: true, force: true });
-		} catch {}
+		} catch {
+			// Best effort: cleanup failures must not mask the original error.
+		}
 	}
 }

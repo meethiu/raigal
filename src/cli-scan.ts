@@ -17,7 +17,7 @@ export interface ScanFlags {
 	failOn?: FailOnMode;
 }
 
-export const commaSeparatedParser = (value: string, previous: string[] = []): string[] => {
+const commaSeparatedParser = (value: string, previous: string[] = []): string[] => {
 	const parts = value
 		.split(",")
 		.map((v) => v.trim())

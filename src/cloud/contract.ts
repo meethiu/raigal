@@ -73,7 +73,7 @@ export const AllowedOwner = z.object({
 });
 
 export const EntitlementClaims = z.object({
-  iss: z.literal("https://app.raigal.dev"),
+  iss: z.literal(process.env.RAIGAL_API_URL?.trim().replace(/\/+$/, "") || "https://app.raigal.dev"),
   sub: z.string(),                      // org id
   org_name: z.string(),
   plan: z.enum(["trial", "active"]),
