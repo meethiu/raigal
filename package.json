@@ -1,6 +1,6 @@
 {
 	"name": "@methiu/raigal",
-	"version": "0.16.4",
+	"version": "1.0.0",
 	"publishConfig": {
 		"access": "public"
 	},
