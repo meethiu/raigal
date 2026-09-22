@@ -45,7 +45,7 @@ describe("GitHub action manifest", () => {
 		expect(manifest.inputs?.version?.default).toBe("latest");
 		expect(manifest.inputs?.version?.description).toContain("latest published");
 		const runScript = manifest.runs?.steps?.map((step) => step.run?.toString()).join("\n");
-		expect(runScript).toContain('npm exec --yes --package "raigal@${RAIGAL_VERSION}"');
+		expect(runScript).toMatch(/npm exec --yes --package "(@methiu\/)?raigal@\${RAIGAL_VERSION}"/);
 		expect(runScript).toContain('scan_dir="$GITHUB_WORKSPACE/$scan_dir"');
 		expect(runScript).toContain('npm_exec_dir="$(mktemp -d)"');
 	});
