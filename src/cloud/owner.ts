@@ -134,7 +134,7 @@ export const detectLocalRepoOwner = (directory: string): DetectedRepoOwner => {
 	return parseGitRemote(spawnGitRemote(gitRoot));
 };
 
-export const isNonGitHubCi = (): boolean => {
+const isNonGitHubCi = (): boolean => {
 	const env = process.env;
 	const isCi = env.CI === "true" || env.CI === "1";
 	if (!isCi) return false;

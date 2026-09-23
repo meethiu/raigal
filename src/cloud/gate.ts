@@ -8,7 +8,7 @@ import {
 } from "./entitlement.js";
 import { checkOwnerAgainstAllowlist, detectLocalRepoOwner } from "./owner.js";
 
-export type GateMode = "fatal" | "quiet" | "throw";
+type GateMode = "fatal" | "quiet" | "throw";
 
 export interface RequireEntitlementOptions {
 	directory?: string;

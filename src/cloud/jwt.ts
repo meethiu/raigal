@@ -29,7 +29,7 @@ interface JwtHeader {
 	kid?: string;
 }
 
-export const isVersionAtLeast = (current: string, required: string): boolean => {
+const isVersionAtLeast = (current: string, required: string): boolean => {
 	const parse = (v: string) =>
 		v
 			.replace(/^v/, "")
@@ -43,19 +43,6 @@ export const isVersionAtLeast = (current: string, required: string): boolean => 
 	if (cMajor !== rMajor) return cMajor > rMajor;
 	if (cMinor !== rMinor) return cMinor > rMinor;
 	return cPatch >= rPatch;
-};
-
-export const decodeJwtPayloadUnchecked = (jwt: string): unknown => {
-	const parts = jwt.trim().split(".");
-	if (parts.length !== 3 || !parts[1]) {
-		throw new JwtVerificationError("Malformed JWT structure", "invalid_format");
-	}
-	try {
-		const json = Buffer.from(parts[1], "base64url").toString("utf-8");
-		return JSON.parse(json);
-	} catch {
-		throw new JwtVerificationError("Failed to decode JWT payload", "invalid_format");
-	}
 };
 
 export interface VerifyJwtOptions {

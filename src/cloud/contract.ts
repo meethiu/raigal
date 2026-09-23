@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 
-export const Severity = z.enum(["error", "warning"]);
+const Severity = z.enum(["error", "warning"]);
 
 export const Finding = z.object({
   rule_id: z.string().max(120),
@@ -73,7 +73,7 @@ export const AllowedOwner = z.object({
 });
 
 export const EntitlementClaims = z.object({
-  iss: z.literal("https://app.raigal.dev"),
+  iss: z.literal(process.env.RAIGAL_ISSUER?.trim() || "https://app.raigal.dev"),
   sub: z.string(),                      // org id
   org_name: z.string(),
   plan: z.enum(["trial", "active"]),

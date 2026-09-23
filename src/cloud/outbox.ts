@@ -7,7 +7,7 @@ import type { RunType } from "./types.js";
 
 export const MAX_OUTBOX_BYTES = 5 * 1024 * 1024; // 5 MB
 
-export const getMaxOutboxBytes = (): number => {
+const getMaxOutboxBytes = (): number => {
 	const override = process.env.RAIGAL_MAX_OUTBOX_BYTES;
 	if (override) {
 		const parsed = Number.parseInt(override, 10);

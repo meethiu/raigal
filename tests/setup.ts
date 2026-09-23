@@ -17,6 +17,10 @@ registerPublicKeyForTests(TEST_KID, TEST_PUBLIC_KEY_PEM);
 process.env.RAIGAL_KEY_ID = TEST_KID;
 process.env.RAIGAL_PUBLIC_KEY = TEST_PUBLIC_KEY_PEM;
 
+// Prevent CI runner OIDC tokens from leaking into unit tests testing unauthenticated behavior
+delete process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
+delete process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+
 // Create a stable test config directory with session credentials and cached entitlement
 const testConfigDir = path.join(os.tmpdir(), "raigal-vitest-global-config");
 fs.mkdirSync(testConfigDir, { recursive: true });

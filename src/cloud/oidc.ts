@@ -1,6 +1,3 @@
-export const isGitHubActions = (): boolean =>
-	Boolean(process.env.GITHUB_ACTIONS === "true" || process.env.GITHUB_ACTIONS === "1");
-
 export const fetchGitHubOidcToken = async (): Promise<string | undefined> => {
 	const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
 	const requestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;

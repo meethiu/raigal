@@ -27,6 +27,8 @@ describe("requireEntitlement gate", () => {
 	beforeEach(() => {
 		tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "raigal-gate-test-"));
 		process.env.RAIGAL_CONFIG_DIR = tempDir;
+		delete process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
+		delete process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
 	});
 
 	afterEach(() => {
@@ -37,6 +39,8 @@ describe("requireEntitlement gate", () => {
 		} else {
 			delete process.env.RAIGAL_CONFIG_DIR;
 		}
+		delete process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
+		delete process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
 		fs.rmSync(tempDir, { recursive: true, force: true });
 	});
 
