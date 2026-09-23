@@ -71,14 +71,18 @@ const program = new Command()
 	.name("raigal")
 	.description("The quality gate for agentic coding.")
 	.version(APP_VERSION, "-v, --version")
-	.argument("[directory]", "directory to scan when no command is passed", ".")
-	.option("--changes", "only scan changed files (git diff)")
-	.option("--staged", "only scan staged files")
-	.option("--base <ref>", "diff base for --changes, e.g. origin/main (default HEAD)")
-	.option("-d, --verbose", "show file details per rule")
-	.option("--json", "output JSON instead of terminal UI")
-	.option("--sarif", "output SARIF 2.1.0 (for GitHub code scanning)")
-	.option("--format <format>", "output format: json or sarif");
+	.argument("[directory]", "directory to scan when no command is passed", ".");
+
+const ROOT_SCAN_OPTIONS: [flag: string, description: string][] = [
+	["--changes", "only scan changed files (git diff)"],
+	["--staged", "only scan staged files"],
+	["--base <ref>", "diff base for --changes, e.g. origin/main (default HEAD)"],
+	["-d, --verbose", "show file details per rule"],
+	["--json", "output JSON instead of terminal UI"],
+	["--sarif", "output SARIF 2.1.0 (for GitHub code scanning)"],
+	["--format <format>", "output format: json or sarif"],
+];
+for (const [flag, description] of ROOT_SCAN_OPTIONS) program.option(flag, description);
 
 addFilterAndFailOnOptions(program)
 	.showSuggestionAfterError()
@@ -96,14 +100,18 @@ addFilterAndFailOnOptions(program)
 
 const scanCmd = program
 	.command("scan [directory]")
-	.description("Score a project and print findings")
-	.option("--changes", "only scan changed files")
-	.option("--staged", "only scan staged files")
-	.option("--base <ref>", "diff base for --changes, e.g. origin/main (default HEAD)")
-	.option("-d, --verbose", "show file details per rule")
-	.option("--json", "output JSON")
-	.option("--sarif", "output SARIF 2.1.0 (for GitHub code scanning)")
-	.option("--format <format>", "output format: json or sarif");
+	.description("Score a project and print findings");
+
+const SCAN_OPTIONS: [flag: string, description: string][] = [
+	["--changes", "only scan changed files"],
+	["--staged", "only scan staged files"],
+	["--base <ref>", "diff base for --changes, e.g. origin/main (default HEAD)"],
+	["-d, --verbose", "show file details per rule"],
+	["--json", "output JSON"],
+	["--sarif", "output SARIF 2.1.0 (for GitHub code scanning)"],
+	["--format <format>", "output format: json or sarif"],
+];
+for (const [flag, description] of SCAN_OPTIONS) scanCmd.option(flag, description);
 
 addFilterAndFailOnOptions(scanCmd).action(async (directory = ".", _flags, command) => {
 	await runScan(directory, command.optsWithGlobals() as ScanFlags);

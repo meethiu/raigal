@@ -10,7 +10,6 @@ import type {
 	RepoRef,
 	Report,
 	Run,
-	Severity,
 	Step,
 } from "./contract.js";
 
