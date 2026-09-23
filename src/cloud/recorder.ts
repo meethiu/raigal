@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { APP_VERSION } from "../version.js";
-import { detectCiContext, detectGitContext, detectRepoRef } from "./context.js";
+import { type GitContextResult, detectCiContext, detectGitContext, detectRepoRef } from "./context.js";
 import { getActiveToken } from "./credentials.js";
 import { enqueueRun, flushOutbox } from "./outbox.js";
 import type { ReportType, RunType, StepType } from "./types.js";
@@ -15,6 +15,7 @@ export class CloudRunRecorder {
 	private steps: StepType[] = [];
 	private report?: ReportType;
 	private policyMeta?: { version: number; hash: string };
+	private gitContextOverride?: Partial<GitContextResult>;
 	private seq = 0;
 	private finished = false;
 
@@ -58,13 +59,24 @@ export class CloudRunRecorder {
 		this.policyMeta = { version, hash: hash.slice(0, 64) };
 	}
 
+	public setGitContext(git: Partial<GitContextResult>): void {
+		this.gitContextOverride = {
+			...this.gitContextOverride,
+			...git,
+		};
+	}
+
 	public buildRunPayload(exitCode: number): RunType {
 		const repo = detectRepoRef(this.directory) || {
 			provider: "github" as const,
 			slug: "unknown/unknown",
 		};
 
-		const git = detectGitContext(this.directory);
+		const detectedGit = detectGitContext(this.directory);
+		const git = {
+			...detectedGit,
+			...this.gitContextOverride,
+		};
 		const ci = detectCiContext();
 		const ownerVerified = Boolean(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
 

@@ -17,6 +17,7 @@ import { createAgentWorktree, removeAgentWorktree } from "../agents/worktree.js"
 import type { Diagnostic } from "../engines/types.js";
 import { AgentTui } from "../ui/agent-tui.js";
 import { log } from "../ui/logger.js";
+import { getActiveRecorder } from "../cloud/recorder.js";
 import { runSafeFix, scanJson } from "./agent-local-cli.js";
 import {
 	maybeApplyDiff,
@@ -366,6 +367,35 @@ export const runAgentSession = async (
 		await tui.finish({
 			footer: `Done · ${selected.provider.id} · ${Math.round(performance.now() - started)}ms`,
 		});
+
+		const recorder = getActiveRecorder();
+		if (recorder) {
+			if (published) {
+				const prMatch = published.prUrl?.match(/\/pull\/(\d+)/);
+				const prNumber = prMatch ? Number.parseInt(prMatch[1], 10) : undefined;
+				recorder.setGitContext({
+					branch: published.branch,
+					pr_number: prNumber,
+				});
+			} else if (options.branch) {
+				recorder.setGitContext({
+					branch: options.branch,
+				});
+			}
+			recorder.recordStep("agent:baseline", 50, true);
+			recorder.recordStep(
+				"agent:verify",
+				Math.round(performance.now() - started),
+				verified.after.score !== null && verified.after.score >= options.targetScore,
+			);
+			recorder.setReport({
+				score: verified.after.score,
+				scoreable: true,
+				files_scanned: changedFiles.length,
+				findings: [],
+			});
+		}
+
 		printAgentSessionSummary({
 			before,
 			after: verified.after,
