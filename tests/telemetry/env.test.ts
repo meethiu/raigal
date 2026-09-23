@@ -32,7 +32,7 @@ describe("detectInstallChannel", () => {
 	});
 
 	it("detects bun from user-agent", () => {
-		expect(detectInstallChannel({ npm_config_user_agent: "bun/1.0.0" })).toBe("bun");
+		expect(detectInstallChannel({ npm_config_user_agent: "bun/1.0.1" })).toBe("bun");
 	});
 
 	it("detects npm from user-agent", () => {

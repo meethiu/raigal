@@ -30,7 +30,7 @@ const providerStatus = (overrides: Partial<ProviderStatus> = {}): ProviderStatus
 	provider: PROVIDERS[0],
 	installed: true,
 	authenticated: null,
-	version: "codex-cli 1.0.0",
+	version: "codex-cli 1.0.1",
 	authHint: null,
 	...overrides,
 });

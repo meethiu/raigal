@@ -47,7 +47,7 @@ describe("discoverProject", () => {
 	});
 
 	it("falls back to directory basename when package.json has no name field", async () => {
-		createFile(tmpDir, "package.json", JSON.stringify({ version: "1.0.0" }));
+		createFile(tmpDir, "package.json", JSON.stringify({ version: "1.0.1" }));
 		const info = await discoverProject(tmpDir);
 		expect(info.projectName).toBe(path.basename(tmpDir));
 	});

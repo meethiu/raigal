@@ -71,7 +71,7 @@ describe("Task 1: Secret Leak Matrix", () => {
 
 		fs.writeFileSync(
 			path.join(testDir, "package.json"),
-			JSON.stringify({ name: "raigal-leak-matrix-test", version: "1.0.0", private: true }, null, 2),
+			JSON.stringify({ name: "raigal-leak-matrix-test", version: "1.0.1", private: true }, null, 2),
 		);
 
 		const cfgDir = path.join(testDir, ".raigal");
@@ -278,7 +278,7 @@ describe("Task 1: Secret Leak Matrix", () => {
 		fs.mkdirSync(path.join(mcpDir, "src"), { recursive: true });
 		fs.writeFileSync(
 			path.join(mcpDir, "package.json"),
-			JSON.stringify({ name: "mcp-leak-fixture", version: "1.0.0", private: true }, null, 2),
+			JSON.stringify({ name: "mcp-leak-fixture", version: "1.0.1", private: true }, null, 2),
 		);
 		fs.writeFileSync(
 			path.join(mcpDir, "src", "credentials.ts"),

@@ -27,13 +27,13 @@ describe("isOutdated", () => {
 	it("is true when latest is a higher patch, minor, or major", () => {
 		expect(isOutdated("0.10.0", "0.10.1")).toBe(true);
 		expect(isOutdated("0.9.4", "0.10.0")).toBe(true);
-		expect(isOutdated("0.10.4", "1.0.0")).toBe(true);
+		expect(isOutdated("0.10.4", "1.0.1")).toBe(true);
 	});
 
 	it("is false when current is equal or ahead", () => {
 		expect(isOutdated("0.10.1", "0.10.1")).toBe(false);
 		expect(isOutdated("0.10.2", "0.10.1")).toBe(false);
-		expect(isOutdated("1.0.0", "0.10.9")).toBe(false);
+		expect(isOutdated("1.0.1", "0.10.9")).toBe(false);
 	});
 
 	it("is false when either version is unparseable", () => {

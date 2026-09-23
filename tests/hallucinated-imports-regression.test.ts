@@ -296,7 +296,7 @@ describe("hallucinated-import regressions — still catches real slop after FP f
 				writeFile("web/src/app.ts", 'import value from "ghost-package";\nvalue();\n');
 				fs.writeFileSync(
 					path.join(outsideDir, "package.json"),
-					JSON.stringify({ name: "web", dependencies: { "ghost-package": "1.0.0" } }),
+					JSON.stringify({ name: "web", dependencies: { "ghost-package": "1.0.1" } }),
 				);
 				fs.symlinkSync(
 					path.join(outsideDir, "package.json"),
@@ -367,7 +367,7 @@ describe("hallucinated-import regressions — still catches real slop after FP f
 		try {
 			fs.writeFileSync(
 				path.join(outsideDir, "package.json"),
-				JSON.stringify({ name: "outside", dependencies: { "totally-fake-package": "1.0.0" } }),
+				JSON.stringify({ name: "outside", dependencies: { "totally-fake-package": "1.0.1" } }),
 			);
 			writeFile(
 				"package.json",

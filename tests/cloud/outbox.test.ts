@@ -24,7 +24,7 @@ const createMockRun = (id: string, overrides: Partial<RunType> = {}): RunType =>
 		branch: "main",
 	},
 	flags: ["changes"],
-	cli_version: "1.0.0",
+	cli_version: "1.0.1",
 	started_at: "2026-09-21T10:00:00.000Z",
 	ended_at: "2026-09-21T10:00:05.000Z",
 	exit_code: 0,

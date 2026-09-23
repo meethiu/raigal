@@ -4,12 +4,12 @@ import { redactProperties } from "../../src/telemetry/redaction.js";
 describe("redactProperties", () => {
 	it("keeps allowlisted properties", () => {
 		const { clean, dropped } = redactProperties({
-			aislop_version: "1.0.0",
+			aislop_version: "1.0.1",
 			command: "scan",
 			score: 90,
 		});
 		expect(clean).toEqual({
-			aislop_version: "1.0.0",
+			aislop_version: "1.0.1",
 			command: "scan",
 			score: 90,
 		});
@@ -18,11 +18,11 @@ describe("redactProperties", () => {
 
 	it("drops non-allowlisted properties", () => {
 		const { clean, dropped } = redactProperties({
-			aislop_version: "1.0.0",
+			aislop_version: "1.0.1",
 			file_path: "/Users/me/secrets.env",
 			repo_name: "my-repo",
 		});
-		expect(clean).toEqual({ aislop_version: "1.0.0" });
+		expect(clean).toEqual({ aislop_version: "1.0.1" });
 		expect(dropped.sort()).toEqual(["file_path", "repo_name"]);
 	});
 

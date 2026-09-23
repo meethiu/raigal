@@ -87,7 +87,7 @@ describe("collectPnpmOverrides", () => {
 	it("skips advisories missing module_name or patched_versions", () => {
 		const advisories: Record<string, PnpmAdvisory> = {
 			"1": { module_name: "pkg" },
-			"2": { patched_versions: ">=1.0.0" },
+			"2": { patched_versions: ">=1.0.1" },
 		};
 		expect(collectPnpmOverrides(advisories)).toEqual({});
 	});
@@ -137,7 +137,7 @@ describe("isDowngrade", () => {
 	it("does not flag legitimate upgrades", () => {
 		expect(isDowngrade("^12.1.0", "^13.6.0")).toBe(false);
 		expect(isDowngrade("^19.0.2", "^22.0.0")).toBe(false); // sinon
-		expect(isDowngrade("^1.0.0", "^1.0.1")).toBe(false);
+		expect(isDowngrade("^1.0.1", "^1.0.1")).toBe(false);
 	});
 
 	it("does not flag identical versions", () => {
@@ -145,8 +145,8 @@ describe("isDowngrade", () => {
 	});
 
 	it("returns false when either side is unparseable (no info, do nothing)", () => {
-		expect(isDowngrade("workspace:*", "^1.0.0")).toBe(false);
-		expect(isDowngrade("^1.0.0", "workspace:*")).toBe(false);
+		expect(isDowngrade("workspace:*", "^1.0.1")).toBe(false);
+		expect(isDowngrade("^1.0.1", "workspace:*")).toBe(false);
 	});
 });
 
@@ -274,7 +274,7 @@ describe("fix --dry-run --force", () => {
 		git(root, ["config", "user.email", "test@example.com"]);
 		git(root, ["config", "user.name", "test"]);
 		git(root, ["config", "commit.gpgsign", "false"]);
-		const packageJson = `${JSON.stringify({ name: "force-preview", version: "1.0.0" }, null, 2)}\n`;
+		const packageJson = `${JSON.stringify({ name: "force-preview", version: "1.0.1" }, null, 2)}\n`;
 		const lockfile = "lockfile-must-not-change\n";
 		fs.writeFileSync(path.join(root, "package.json"), packageJson);
 		fs.writeFileSync(path.join(root, "pnpm-lock.yaml"), lockfile);

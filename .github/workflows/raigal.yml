@@ -75,7 +75,7 @@ jobs:
         with:
           directory: ${{ runner.temp }}/aislop-action-fixture
           # Keep this on the latest already-published npm version; release PRs run before the new npm package exists.
-          version: "1.0.0"
+          version: "1.0.1"
 
   quality-gate:
     name: Quality gate

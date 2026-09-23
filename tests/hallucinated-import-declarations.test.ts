@@ -69,7 +69,7 @@ describe("ambient declaration module classification", () => {
 	it("keeps import type expressions in the global declaration scope", async () => {
 		writeFile(
 			"package.json",
-			JSON.stringify({ name: "app", dependencies: { "external-package": "1.0.0" } }),
+			JSON.stringify({ name: "app", dependencies: { "external-package": "1.0.1" } }),
 		);
 		writeFile(
 			"src/ambient.d.ts",

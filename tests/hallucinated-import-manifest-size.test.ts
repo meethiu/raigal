@@ -63,7 +63,7 @@ describe("detectHallucinatedImports - oversized manifests", () => {
 			try {
 				fs.writeFileSync(
 					path.join(outsideDir, "package.json"),
-					JSON.stringify({ dependencies: { "totally-fake-package": "1.0.0" } }),
+					JSON.stringify({ dependencies: { "totally-fake-package": "1.0.1" } }),
 				);
 				fs.symlinkSync(path.join(outsideDir, "package.json"), path.join(tmpDir, "package.json"));
 				writeFile("src/index.ts", 'import value from "totally-fake-package";\nvalue;\n');
