@@ -2,7 +2,7 @@
 
 **Catch the slop AI coding agents leave in your code.**
 
-[![npm version](https://img.shields.io/npm/v/raigal.svg)](https://www.npmjs.com/package/raigal) [![npm downloads](https://img.shields.io/npm/dm/raigal.svg)](https://www.npmjs.com/package/raigal) [![CI](https://github.com/meethiu/raigal/actions/workflows/ci.yml/badge.svg)](https://github.com/meethiu/raigal/actions/workflows/ci.yml) [![Node >= 20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/Mzz4A6mfj6)
+[![npm version](https://img.shields.io/npm/v/raigal.svg)](www.npmjs.com/package/@methiu/raigal/) [![npm downloads](https://img.shields.io/npm/dm/raigal.svg)](https://www.npmjs.com/package/raigal) [![CI](https://github.com/meethiu/raigal/actions/workflows/ci.yml/badge.svg)](https://github.com/meethiu/raigal/actions/workflows/ci.yml) [![Node >= 20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/Mzz4A6mfj6)
 
 The patterns Claude Code, Cursor, Codex, and OpenCode leave behind: narrative comments above self-explanatory code, swallowed exceptions, hidden fallbacks, `as any` casts, hallucinated imports, duplicated helpers, dead code, todo stubs, oversized functions. Tests pass. Lint passes. The code rots anyway.
 
@@ -10,7 +10,7 @@ Raigal catches them. 50+ rules across 10 language targets (TypeScript, JavaScrip
 
 ## Quick start
 
-Raigal is proprietary software licensed to organizations on an admin-managed allowlist. Runs require authentication via organization credentials (`raigal login` or `RAIGAL_TOKEN`).
+Raigal is demo software licensed to organizations on an admin-managed allowlist. Runs require authentication via organization credentials (`raigal login` or `RAIGAL_TOKEN`).
 
 ```bash
 # 1. Sign in with your organization account
@@ -25,10 +25,11 @@ In CI and automated workflows, provide your organization API key via the `RAIGAL
 Also available on npm, Yarn, Bun, and Homebrew:
 
 ```bash
-npm install -g raigal                # npm
-yarn dlx raigal scan                 # Yarn
-bun add -g raigal                    # Bun
-brew install meethiu/tap/raigal      # Homebrew
+npm install -g @meethiu/raigal
+
+or
+
+npm i @methiu/raigal
 ```
 
 See [Installation](#installation) for every option.
