@@ -2,8 +2,7 @@
 
 **Catch the slop AI coding agents leave in your code.**
 
-[![npm version](https://img.shields.io/npm/v/raigal.svg)](www.npmjs.com/package/@methiu/raigal/) [![npm downloads](https://img.shields.io/npm/dm/raigal.svg)](https://www.npmjs.com/package/raigal) [![CI](https://github.com/meethiu/raigal/actions/workflows/ci.yml/badge.svg)](https://github.com/meethiu/raigal/actions/workflows/ci.yml) [![Node >= 20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/Mzz4A6mfj6)
-
+[![npm version](https://img.shields.io/npm/v/@methiu/raigal.svg)](https://www.npmjs.com/package/@methiu/raigal) [![npm downloads](https://img.shields.io/npm/dm/@methiu/raigal.svg)](https://www.npmjs.com/package/@methiu/raigal) [![CI](https://github.com/meethiu/raigal/actions/workflows/ci.yml/badge.svg)](https://github.com/meethiu/raigal/actions/workflows/ci.yml) [![Node >= 20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org)
 The patterns Claude Code, Cursor, Codex, and OpenCode leave behind: narrative comments above self-explanatory code, swallowed exceptions, hidden fallbacks, `as any` casts, hallucinated imports, duplicated helpers, dead code, todo stubs, oversized functions. Tests pass. Lint passes. The code rots anyway.
 
 Raigal catches them. 50+ rules across 10 language targets (TypeScript, JavaScript, Expo / React Native, Python, Go, Rust, Ruby, PHP, C#, C/C++). Scores every change 0-100. Sub-second. Deterministic: no LLM in the runtime path, same code in, same score out.
@@ -25,7 +24,7 @@ In CI and automated workflows, provide your organization API key via the `RAIGAL
 Also available on npm, Yarn, Bun, and Homebrew:
 
 ```bash
-npm install -g @meethiu/raigal
+npm install -g @methiu/raigal
 
 or
 
@@ -54,7 +53,7 @@ raigal hook install --claude # per-edit hook
 [![raigal](https://badges.raigal.dev/score/<owner>/<repo>.svg)](https://raigal.dev)
 ```
 
-Run `npx raigal@latest badge` to auto-generate. Free at [raigal.dev](https://raigal.dev).
+Run `npx @methiu/raigal@latest badge` to auto-generate. Free at [raigal.dev](https://raigal.dev).
 
 ## See it in action
 
@@ -72,22 +71,22 @@ The same CLI is published to npm and Homebrew. Pick whichever fits your stack.
 
 ```bash
 # Run without installing
-npx raigal@latest scan
+npx @methiu/raigal@latest scan
 
 # npm
-npm install --save-dev raigal
+npm install --save-dev @methiu/raigal
 
 # yarn
-yarn add --dev raigal
+yarn add --dev @methiu/raigal
 
 # pnpm
-pnpm add -D raigal
+pnpm add -D @methiu/raigal
 
 # bun
-bun add -d raigal
+bun add -d @methiu/raigal
 
 # Global
-npm install -g raigal
+npm install -g @methiu/raigal
 ```
 
 Package installation does not run dependency lifecycle scripts. After installing, run `raigal-tools` once if you want bundled Ruff and golangci-lint coverage; the core scanner works without it.
@@ -114,7 +113,7 @@ Full reference for every channel, optional bundled tooling, and external tools: 
 
 ## Usage
 
-Examples below use the installed `raigal` binary. For a one-off latest run, prefix the command with `npx raigal@latest`, for example `npx raigal@latest scan`.
+Examples below use the installed `raigal` binary. For a one-off latest run, prefix the command with `npx @methiu/raigal@latest`, for example `npx @methiu/raigal@latest scan`.
 
 ### Command reference
 
@@ -273,7 +272,7 @@ raigal install claude cursor           # alias for hook install
 raigal install hooks --claude          # natural alias for hook install
 ```
 
-**Runtime adapters** (scan + feedback): `claude`, `cursor`, `gemini`, `pi`.  
+**Runtime adapters** (scan + feedback): `claude`, `cursor`, `gemini`, `pi`.
 **Rules-only** (agent reads rules): `codex`, `windsurf`, `cline`, `kilocode`, `antigravity`, `copilot`.
 
 Hook install flags: `--agent <names>`, `-g, --global`, `--project`, `--dry-run`, `--yes`, `--quality-gate`, plus per-agent shortcuts `--claude`, `--cursor`, `--gemini`, `--pi`, `--codex`, `--windsurf`, `--cline`, `--kilocode`, `--antigravity`, `--copilot`.
@@ -299,7 +298,7 @@ Expose Raigal as MCP tools for Claude Desktop, Cursor, Codex:
   "mcpServers": {
     "raigal": {
       "command": "npx",
-      "args": ["-y", "raigal-mcp"]
+      "args": ["-y", "@methiu/raigal-mcp"]
     }
   }
 }
@@ -390,7 +389,7 @@ jobs:
         with:
           node-version: 24
       - name: Raigal Quality Gate
-        run: npx --yes raigal@latest ci
+        run: npx --yes @methiu/raigal@latest ci
         env:
           RAIGAL_TOKEN: ${{ secrets.RAIGAL_TOKEN }}
 ```
@@ -398,7 +397,7 @@ jobs:
 **GitHub code scanning (SARIF)**: emit a SARIF 2.1.0 report and upload it so findings appear in the Security tab:
 
 ```yaml
-- run: npx raigal@latest scan . --sarif > raigal.sarif
+- run: npx @methiu/raigal@latest scan . --sarif > raigal.sarif
 - uses: github/codeql-action/upload-sarif@v3
   with:
     sarif_file: raigal.sarif
@@ -420,7 +419,7 @@ pipelines:
             depth: full   # branch diffs need history
           script:
             - git fetch origin "$BITBUCKET_PR_DESTINATION_BRANCH"
-            - npx --yes raigal@latest ci --changes --base FETCH_HEAD
+            - npx --yes @methiu/raigal@latest ci --changes --base FETCH_HEAD
 ```
 
 `ci` applies the score gate and exit code, so no JSON parsing or hand-rolled threshold is needed. More providers: [CI/CD](docs/ci.md).
@@ -489,7 +488,7 @@ Raigal rules are shaped by public scans and benchmark-derived failure modes, not
 
 ## Community
 
-[Discord](https://discord.gg/Mzz4A6mfj6) for community chat and support · [Discussions](https://github.com/meethiu/raigal/discussions) for questions, rule requests, and false-positive triage · [Issues](https://github.com/meethiu/raigal/issues) for bugs
+[Discussions](https://github.com/meethiu/raigal/discussions) for questions, rule requests, and false-positive triage · [Issues](https://github.com/meethiu/raigal/issues) for bugs
 
 ## Contributing
 
