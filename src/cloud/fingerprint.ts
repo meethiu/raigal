@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type { Diagnostic } from "../engines/types.js";
+import { formatFindingMessage } from "../output/rule-message.js";
 import { toPosix } from "../utils/paths.js";
 import type { FindingType } from "./types.js";
 
@@ -69,5 +70,6 @@ export const toContractFinding = (
 		path: relativePath,
 		line: Math.max(0, diagnostic.line),
 		fingerprint,
+		message: formatFindingMessage(diagnostic),
 	};
 };

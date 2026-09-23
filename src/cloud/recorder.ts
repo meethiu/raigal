@@ -3,7 +3,7 @@ import { APP_VERSION } from "../version.js";
 import { type GitContextResult, detectCiContext, detectGitContext, detectRepoRef } from "./context.js";
 import { getActiveToken } from "./credentials.js";
 import { enqueueRun, flushOutbox } from "./outbox.js";
-import type { ReportType, RunType, StepType } from "./types.js";
+import type { AgentTelemetryType, ReportType, RunType, StepType } from "./types.js";
 
 export class CloudRunRecorder {
 	public readonly runId: string;
@@ -16,6 +16,7 @@ export class CloudRunRecorder {
 	private report?: ReportType;
 	private policyMeta?: { version: number; hash: string };
 	private gitContextOverride?: Partial<GitContextResult>;
+	private agentTelemetry?: AgentTelemetryType;
 	private seq = 0;
 	private finished = false;
 
@@ -59,6 +60,10 @@ export class CloudRunRecorder {
 		this.policyMeta = { version, hash: hash.slice(0, 64) };
 	}
 
+	public setAgentTelemetry(telemetry: AgentTelemetryType): void {
+		this.agentTelemetry = telemetry;
+	}
+
 	public setGitContext(git: Partial<GitContextResult>): void {
 		this.gitContextOverride = {
 			...this.gitContextOverride,
@@ -94,7 +99,13 @@ export class CloudRunRecorder {
 			ended_at: new Date().toISOString(),
 			exit_code: exitCode,
 			steps: this.steps.slice(0, 200),
-			report: this.report,
+			report: this.report
+				? {
+						...this.report,
+						agent_telemetry: this.agentTelemetry || this.report.agent_telemetry,
+					}
+				: undefined,
+			agent_telemetry: this.agentTelemetry,
 		};
 	}
 

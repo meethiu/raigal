@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { selectAgentFindings } from "../agents/prompt.js";
@@ -370,6 +371,19 @@ export const runAgentSession = async (
 
 		const recorder = getActiveRecorder();
 		if (recorder) {
+			let patchDiff: string | undefined;
+			if (created?.worktree?.path) {
+				try {
+					const diffRes = spawnSync("git", ["diff", "-U2", "--no-color", "HEAD"], {
+						cwd: created.worktree.path,
+						encoding: "utf-8",
+					});
+					patchDiff = (diffRes.stdout || "").slice(0, 20000) || undefined;
+				} catch {
+					// best-effort diff capture
+				}
+			}
+
 			if (published) {
 				const prMatch = published.prUrl?.match(/\/pull\/(\d+)/);
 				const prNumber = prMatch ? Number.parseInt(prMatch[1], 10) : undefined;
@@ -382,6 +396,17 @@ export const runAgentSession = async (
 					branch: options.branch,
 				});
 			}
+
+			const agentTelemetry = {
+				provider: selected.provider.id,
+				before_score: before.score,
+				after_score: verified.after.score,
+				pr_url: published?.prUrl || undefined,
+				patch_diff: patchDiff,
+				duration_ms: Math.round(performance.now() - started),
+			};
+
+			recorder.setAgentTelemetry(agentTelemetry);
 			recorder.recordStep("agent:baseline", 50, true);
 			recorder.recordStep(
 				"agent:verify",
@@ -393,6 +418,7 @@ export const runAgentSession = async (
 				scoreable: true,
 				files_scanned: changedFiles.length,
 				findings: [],
+				agent_telemetry: agentTelemetry,
 			});
 		}
 

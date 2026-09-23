@@ -9,6 +9,7 @@ export const Finding = z.object({
   path: z.string().max(500),            // repo-relative, forward slashes
   line: z.number().int().nonnegative(),
   fingerprint: z.string().length(32),   // sha256(rule_id \0 path \0 whitespace-normalised line text), hex, first 32 chars; computed in the CLI
+  message: z.string().max(500).optional(),
 });
 
 export const RepoRef = z.object({
@@ -26,12 +27,22 @@ export const Step = z.object({
   counts: z.record(z.string(), z.number()).optional(),
 });
 
+export const AgentTelemetry = z.object({
+  provider: z.string().max(80),
+  before_score: z.number().min(0).max(100).nullable(),
+  after_score: z.number().min(0).max(100).nullable(),
+  pr_url: z.string().url().max(500).optional(),
+  patch_diff: z.string().max(20000).optional(),
+  duration_ms: z.number().int().nonnegative().optional(),
+});
+
 export const Report = z.object({
   score: z.number().min(0).max(100).nullable(),
   scoreable: z.boolean(),
   engine_scores: z.record(z.string(), z.number()).optional(),
   files_scanned: z.number().int().nonnegative(),
   findings: z.array(Finding).max(5000),
+  agent_telemetry: AgentTelemetry.optional(),
 });
 
 export const Run = z.object({
@@ -44,6 +55,12 @@ export const Run = z.object({
     head_sha: z.string().max(64).optional(),   // pull_request events: PR head SHA from GITHUB_EVENT_PATH, not GITHUB_SHA
     base_ref: z.string().max(200).optional(),
     pr_number: z.number().int().optional(),
+    diff_summary: z.object({
+      files_changed: z.number().int().nonnegative(),
+      additions: z.number().int().nonnegative(),
+      deletions: z.number().int().nonnegative(),
+    }).optional(),
+    diff_preview: z.string().max(10000).optional(),
   }),
   ci: z.object({ provider: z.string().max(40), run_url: z.url().max(500).optional() }).optional(),
   flags: z.array(z.string().max(40)).max(40),      // flag NAMES only, never values
@@ -54,6 +71,7 @@ export const Run = z.object({
   exit_code: z.number().int(),
   steps: z.array(Step).max(200),
   report: Report.optional(),
+  agent_telemetry: AgentTelemetry.optional(),
 });
 
 export const Policy = z.object({

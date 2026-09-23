@@ -62,9 +62,9 @@ describe("fingerprint calculation and privacy", () => {
 		expect(contractFinding.severity).toBe("error");
 		expect(contractFinding.fingerprint).toHaveLength(32);
 
-		// Source text and secret message must never be present
+		// Source text and raw secret must never be present
 		const json = JSON.stringify(contractFinding);
 		expect(json).not.toContain("SUPER_SECRET_VALUE");
-		expect(json).not.toContain("message");
+		expect(contractFinding.message).toBe("Hardcoded credential. Rotate it and load it from the environment.");
 	});
 });

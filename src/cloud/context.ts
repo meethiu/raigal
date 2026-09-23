@@ -9,6 +9,12 @@ export interface GitContextResult {
 	head_sha?: string;
 	base_ref?: string;
 	pr_number?: number;
+	diff_summary?: {
+		files_changed: number;
+		additions: number;
+		deletions: number;
+	};
+	diff_preview?: string;
 }
 
 export interface CiContextResult {
@@ -28,6 +34,67 @@ const execGit = (args: string[], cwd: string): string | undefined => {
 		return trimmed || undefined;
 	} catch {
 		return undefined;
+	}
+};
+
+const detectDefaultBranch = (directory: string): string => {
+	try {
+		const out = execGit(["symbolic-ref", "refs/remotes/origin/HEAD"], directory);
+		if (out && out.startsWith("refs/remotes/origin/")) {
+			return out.replace("refs/remotes/origin/", "").trim();
+		}
+	} catch {
+		// fallback
+	}
+	return "main";
+};
+
+export const detectGitDiff = (
+	directory: string,
+	baseRef?: string,
+): {
+	diffSummary?: { files_changed: number; additions: number; deletions: number };
+	diffPreview?: string;
+} => {
+	const targetBase = baseRef || detectDefaultBranch(directory);
+	try {
+		let shortstat = execGit(["diff", "--shortstat", `${targetBase}...HEAD`], directory);
+		if (!shortstat) {
+			shortstat = execGit(["diff", "--shortstat", `origin/${targetBase}...HEAD`], directory);
+		}
+		if (!shortstat) {
+			shortstat = execGit(["diff", "--shortstat", "HEAD~1"], directory);
+		}
+
+		let diffSummary: { files_changed: number; additions: number; deletions: number } | undefined;
+		if (shortstat) {
+			const filesMatch = shortstat.match(/(\d+)\s+files?\s+changed/);
+			const addMatch = shortstat.match(/(\d+)\s+insertions?\s*\(\+\)/);
+			const delMatch = shortstat.match(/(\d+)\s+deletions?\s*\(-\)/);
+			diffSummary = {
+				files_changed: filesMatch ? Number.parseInt(filesMatch[1], 10) : 1,
+				additions: addMatch ? Number.parseInt(addMatch[1], 10) : 0,
+				deletions: delMatch ? Number.parseInt(delMatch[1], 10) : 0,
+			};
+		}
+
+		let preview = execGit(["diff", "-U2", "--no-color", `${targetBase}...HEAD`], directory);
+		if (!preview) {
+			preview = execGit(["diff", "-U2", "--no-color", `origin/${targetBase}...HEAD`], directory);
+		}
+		if (!preview) {
+			preview = execGit(["diff", "-U2", "--no-color", "HEAD~1"], directory);
+		}
+
+		let diffPreview: string | undefined;
+		if (preview) {
+			const lines = preview.split("\n").slice(0, 40);
+			diffPreview = lines.join("\n").slice(0, 10000);
+		}
+
+		return { diffSummary, diffPreview };
+	} catch {
+		return {};
 	}
 };
 
@@ -120,6 +187,10 @@ export const detectGitContext = (directory: string): GitContextResult => {
 	if (headSha) result.head_sha = headSha;
 	if (baseRef) result.base_ref = baseRef;
 	if (prNumber !== undefined && !Number.isNaN(prNumber)) result.pr_number = prNumber;
+
+	const { diffSummary, diffPreview } = detectGitDiff(directory, baseRef);
+	if (diffSummary) result.diff_summary = diffSummary;
+	if (diffPreview) result.diff_preview = diffPreview;
 
 	return result;
 };

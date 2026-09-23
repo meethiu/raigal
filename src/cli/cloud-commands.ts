@@ -42,4 +42,15 @@ export const registerCloudCommands = (program: Command): void => {
 				);
 			}
 		});
+
+	program
+		.command("report-pr-closed")
+		.description("Report a pull request closed/merged event to Raigal Cloud")
+		.option("--pr <number>", "PR number (default: read from GITHUB_EVENT_PATH)")
+		.option("--merged", "Flag indicating whether PR was merged")
+		.action(async (flags: { pr?: string; merged?: boolean }) => {
+			const prNumber = flags.pr ? Number.parseInt(flags.pr, 10) : undefined;
+			const { reportPrClosedCommand } = await import("../commands/report-pr-closed.js");
+			await reportPrClosedCommand({ prNumber, merged: Boolean(flags.merged) });
+		});
 };

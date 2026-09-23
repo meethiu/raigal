@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 
 const PROVIDER_PROBE_TIMEOUT_MS = 1200;
 
-export type AgentProviderId = "codex" | "claude" | "opencode";
+export type AgentProviderId = "codex" | "claude" | "opencode" | (string & {});
 export type AgentProviderSelection = AgentProviderId | "auto";
 
 export interface AgentProvider {
@@ -105,7 +105,26 @@ export const resolveProvider = (
 	statuses: ProviderStatus[] = getProviderStatuses(),
 ): ProviderStatus | null => {
 	if (selection !== "auto") {
-		return statuses.find((status) => status.provider.id === selection) ?? null;
+		const found = statuses.find((status) => status.provider.id === selection);
+		if (found) return found;
+		if (commandExists(selection)) {
+			const customProvider: AgentProvider = {
+				id: selection,
+				label: selection,
+				bin: selection,
+				loginCommand: { command: selection, args: ["login"] },
+				loginHint: `Run \`${selection} login\`.`,
+				buildArgs: (prompt) => [prompt],
+			};
+			return {
+				provider: customProvider,
+				installed: true,
+				authenticated: true,
+				version: readVersion(selection),
+				authHint: null,
+			};
+		}
+		return null;
 	}
 	return (
 		statuses.find((status) => status.installed && status.authenticated !== false) ??

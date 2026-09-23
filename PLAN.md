@@ -1,183 +1,143 @@
-# Raigal CLI Defects Fix Plan
+# Raigal Cloud Kanban: Real Data Wiring & Mock Purge Plan
 
-## Overview
-Comprehensive plan for fixing the 11 defects found across P0, P1, P2, and P3 phases in the Raigal CLI codebase. All work adheres to the test-first methodology, self-scanning constraints (files ≤ 400 LOC, functions ≤ 80 LOC, nesting ≤ 5, params ≤ 6), cross-platform compatibility, zero literal secrets in repository/fixtures, and clean conventional commits.
+## Phase 0: Complete Inventory of Mock Bleed-Through & Hardcoded Entities
+
+Audited against `raigal-main` and `raigal-cloud` on 2026-09-23.
 
 ---
 
-## 1. Codebase Verification & Path Discrepancies
+### 1. References to `mockBoardData`
 
-Prompt names and paths verified against actual repository code:
-
-| Item in Prompt | Verified Location / Status | Notes |
+| File | Line(s) | Usage / Code Snippet |
 |---|---|---|
-| `security/hardcoded-secret` | `src/engines/security/secrets.ts` | Confirmed rule ID and detection logic |
-| `raigal fix --prompt` | `src/commands/fix.ts`, `src/commands/fix-code.ts` | `printPrompt` and `launchAgent` emit prompt |
-| `src/agents/prompt.ts` | `src/agents/prompt.ts` | `buildRepairPrompt` and `snippetFor` |
-| `.raigal/agent/sessions/` | `src/agents/session.ts`, `session-store.ts` | JSONL transcript persistence |
-| `.raigal/history.jsonl` | `src/utils/history.ts` | `appendHistory` appends scan runs |
-| SARIF output | `src/output/sarif.ts` | Driver name is currently `"aislop"` |
-| `src/utils/limits.ts` | Not yet created | New helper module to create for Task 3 |
-| `src/utils/source-masker.ts` | `src/utils/source-masker.ts` | Lexer/masker for JS, C#, Python, etc. |
-| `src/engines/ai-slop/comments.ts` | `src/engines/ai-slop/comments.ts` | Trivial comment detector |
-| `src/engines/ai-slop/comment-blocks.ts` | `src/engines/ai-slop/comment-blocks.ts` | Comment block collector |
-| `src/engines/ai-slop/narrative-comments-fix.ts` | `src/engines/ai-slop/narrative-comments-fix.ts` | Comment fixer |
-| `src/config/schema.ts` | `src/config/schema.ts` | Zod schema currently non-strict, catches errors |
-| `src/config/index.ts` | `src/config/index.ts` | Catches parse errors and falls back to defaults |
-| `src/config/extends.ts` | `src/config/extends.ts` | Extends chain loader |
-| `src/commands/scan-exit-code.ts` | `src/commands/scan-exit-code.ts` | Currently evaluates `failBelow` score gate |
-| `src/telemetry/client.ts` | `src/telemetry/client.ts` | Sends fetch even when `POSTHOG_KEY` is empty |
-| `tools/jb/aislop.DotSettings` | `tools/jb/aislop.DotSettings` | Needs renaming to `raigal.DotSettings` |
-| `src/hooks/feedback.ts` | `src/hooks/feedback.ts` | Schema is `"aislop.hook.v2"`, needs `"raigal.hook.v1"` |
-| `src/mcp.ts` | `src/mcp.ts` | Registers `aislop_*` and `raigal_*` tools |
-| `examples/architecture-rules.yml` | `examples/architecture-rules.yml` | Uses invalid `module:` key; needs `match:`, `forbid:` |
-| `tests/helpers/fake-secrets.ts` | Not yet created | Helper with `fakeSecrets()` runtime factory |
-| `docs/security-model.md` | Not yet created | New security model documentation |
-| `docs/dedupe-audit.md` | Not yet created | Deduplication audit documentation |
-| `scripts/check-branding.mjs` | Not yet created | Branding allowlist verification script |
+| `raigal-cloud/web/src/data/mockBoardData.ts` | 1-337 | Whole file defines mock datasets (`MEDIUM_VULNERABILITIES`, `HIGH_VULNERABILITIES`, `PULL_REQUEST_GATES`, `AGENT_REMEDIATIONS`, `INITIAL_BOARD_FINDINGS`) |
+| `raigal-cloud/web/src/App.tsx` | 39-44 | `import { MEDIUM_VULNERABILITIES, HIGH_VULNERABILITIES, PULL_REQUEST_GATES, AGENT_REMEDIATIONS, INITIAL_BOARD_FINDINGS } from "./data/mockBoardData";` |
+| `raigal-cloud/web/src/App.tsx` | 303 | `return hasRealRuns ? [] : MEDIUM_VULNERABILITIES;` (bleeds mock data when no runs exist or on branch mismatch) |
+| `raigal-cloud/web/src/App.tsx` | 318 | `return hasRealRuns ? [] : HIGH_VULNERABILITIES;` (bleeds mock data) |
+| `raigal-cloud/web/src/App.tsx` | 325 | `return hasRealRuns ? [] : PULL_REQUEST_GATES;` (bleeds mock PR gates) |
+| `raigal-cloud/web/src/App.tsx` | 332 | `return hasRealRuns ? [] : AGENT_REMEDIATIONS;` (bleeds mock agent PRs) |
 
 ---
 
-## 2. Phase Breakdown & Tasks
+### 2. Hardcoded Model & Engine Names ("Claude 3.5 Sonnet", "AST-Transformer", etc.)
 
-### Phase P0: Secret Leakage (Task 1)
-- **Goal:** Secret values must never leave the machine.
-- **Files to touch:**
-  - `tests/helpers/fake-secrets.ts` (new runtime secret generator)
-  - `src/utils/mask-secrets.ts` (new boundary redaction helper: `maskSecrets(text)`)
-  - `src/engines/types.ts` (rule metadata or diagnostic flag for secret class)
-  - `src/engines/orchestrator.ts` (strip source snippets/previews from secret-class diagnostics at engine boundary)
-  - `src/commands/fix-code.ts` (`getCodeSnippet` returns `null` for secret rules; prompt instructed not to commit secrets)
-  - `src/agents/prompt.ts` (`snippetFor` returns `null` for secret rules; repair prompt instruction added)
-  - `src/agents/session.ts` (scrub session events with `maskSecrets` before appending to transcript)
-  - `src/utils/history.ts` (mask before appending)
-  - `src/hooks/feedback.ts` (mask findings and messages in hook envelope)
-  - `src/mcp.ts` (mask content before returning ok/err responses)
-  - `src/output/sarif.ts` (ensure no snippet text for secret rules or any rules)
-  - `src/ui/logger.ts`, `src/ui/error.ts` (scrub debug output and error messages)
-  - `docs/security-model.md` (document security boundary guarantees)
-  - `tests/leak-matrix.test.ts` (comprehensive leak matrix across all 15+ surfaces)
-- **Risks & Mitigations:**
-  - Redaction regexes could impact performance: compile regexes once.
-  - Unparseable file error path could leak source line: wrap parser try/catches to scrub error messages.
-
-### Phase P1: Correctness (Tasks 2 to 6)
-
-#### Task 2: Duplicate findings inflate scores
-- **Goal:** Deduplicate findings representing the same underlying issue on the same file/line.
-- **Files to touch:**
-  - `src/engines/lint/oxlint-config.ts` (turn off `no-eval` when security engine is enabled)
-  - `src/engines/equivalence-dedupe.ts` (new data-driven equivalence table and deduplication pass)
-  - `src/engines/orchestrator.ts` (integrate equivalence deduplication before scoring)
-  - `docs/dedupe-audit.md` (audit report grouping diagnostics by file/line across fixture and repo)
-  - `tests/dedupe-equivalence.test.ts` (tests for eval, unused-import, tie-breaking, score stability)
-- **Equivalence Rules:**
-  - `security/eval` vs `eslint/no-eval`: keep `security/eval` (severity error vs warning).
-  - `ai-slop/unused-import` vs `eslint/no-unused-vars`: keep `ai-slop/unused-import` on same line only if import.
-  - Severity tie: keep native Raigal rule.
-
-#### Task 3: One boundary rule for all complexity limits
-- **Goal:** Consistent integer formula `Math.floor(max * multiplier * 110 / 100)` and `value > limit`.
-- **Files to touch:**
-  - `src/utils/limits.ts` (new helper: `exceedsLimit(value, max, multiplier = 1)`)
-  - `src/engines/code-quality/complexity.ts` (use `exceedsLimit` for file LOC and function LOC)
-  - `src/engines/code-quality/complexity-functions.ts` (use `exceedsLimit` for nesting and params)
-  - `tests/limits-boundary.test.ts` (exact boundary tests: 88/89 fn, 440/441 file, 5/6 nesting, 6/7 params, 880/881 tsx, 55/56 with max 50, 11/12 with max 10)
-- **Formula Verification:**
-  - Function max 80: `Math.floor(80 * 1 * 1.1) = 88`. 88 passes, 89 flags.
-  - File max 400: `Math.floor(400 * 1 * 1.1) = 440`. 440 passes, 441 flags.
-  - TSX file max 400: multiplier 2 applied to max before tolerance -> max 800. `Math.floor(800 * 1.1) = 880`. 880 passes, 881 flags.
-  - Nesting max 5: `Math.floor(5 * 1.1) = 5`. 5 passes, 6 flags.
-  - Params max 6: `Math.floor(6 * 1.1) = 6`. 6 passes, 7 flags.
-
-#### Task 4: Fixer corrupts template-literal contents
-- **Goal:** Prevent template-literal and JSX string contents from being classified as comments or modified by fixers.
-- **Files to touch:**
-  - `src/utils/source-masker.ts` (robust lexer classifying code, string, template quasi, template expression `${...}`, comment, regex, JSX text)
-  - `src/engines/ai-slop/comments.ts` (only match comments, never template or string text)
-  - `src/engines/ai-slop/comment-blocks.ts` (only collect genuine comment blocks)
-  - `src/engines/ai-slop/narrative-comments-fix.ts` (check range start token is a comment before deleting)
-  - `src/commands/fix-steps.ts` or post-fix validation (invariant check: multiset of string and template literals before and after fix must match exactly; revert if mismatch)
-  - `tests/template-literal-safety.test.ts` (table-driven tests for scan and fix)
-
-#### Task 5: Invalid config must fail closed
-- **Goal:** Strict config validation; exit code 2 on config error; host tools exit 0 with 1 line.
-- **Files to touch:**
-  - `src/config/schema.ts` (use `.strict()` on objects; formatting function to format Zod errors with file path, key path, closest known key suggestion)
-  - `src/config/index.ts` (raise config error rather than swallowing with exit 0)
-  - `src/config/extends.ts` (validate each file in extends chain individually)
-  - `src/commands/scan.ts`, `src/commands/ci.ts`, `src/commands/fix.ts`, `src/cli.ts` (handle config error with exit code 2)
-  - Hook commands / host adapters (handle config error by printing one line and exiting 0)
-  - `src/commands/init.ts` (ensure init output adheres to strict schema)
-  - `tests/config-fail-closed.test.ts`
-
-#### Task 6: Predictable exit codes for scan
-- **Goal:** `raigal scan` exits 1 only on error-severity diagnostics; score gate stays in `ci`.
-- **Files to touch:**
-  - `src/commands/scan-exit-code.ts` (separate scan exit code logic from ci exit code logic)
-  - `src/commands/scan.ts` (add `--fail-on <none|error|warning>` option, default `error`)
-  - `src/cli.ts`, `src/cli-scan.ts` (wire up `--fail-on` flag)
-  - `docs/commands.md` and pre-commit documentation
-  - `tests/scan-exit-code.test.ts`
+| File | Line(s) | Hardcoded Value |
+|---|---|---|
+| `raigal-cloud/src/server/routes/v1-runs.ts` | 299 | `agent_engine: "AST-Transformer + Claude 3.5 Sonnet"` (hardcoded in backend aggregation) |
+| `raigal-cloud/web/src/data/mockBoardData.ts` | 237 | `agent_engine: "Deterministic AST-Transformer + Claude 3.5 Sonnet"` |
+| `raigal-cloud/web/src/data/mockBoardData.ts` | 268 | `agent_engine: "Deterministic AST-Transformer (Zero LLM Tokens)"` |
+| `raigal-cloud/web/src/components/cards/AgentRemediationCard.tsx` | 47 | `agentPr.agent_engine.split("+")[1]?.trim() \|\| agentPr.agent_engine` (assumes `AST-Transformer + <Model>` structure) |
 
 ---
 
-### Phase P2: Hygiene (Tasks 7 to 10)
+### 3. Fixed CWE & Threat-Model Paragraphs
 
-#### Task 7: Telemetry
-- **Goal:** Zero network requests when `POSTHOG_KEY` is empty; rename `aislop_version` to `cli_version`; opt-out variables; `telemetry --show`.
-- **Files to touch:**
-  - `src/telemetry/client.ts` (disable network when key is empty, rename property to `cli_version`)
-  - `src/commands/telemetry-show.ts` (print exact pending event and enabled status)
-  - `scripts/check-tarball-keys.mjs` (new CI guard against unapproved PostHog keys in package tarball)
-  - `package.json` (wire guard script)
-  - `tests/telemetry-network.test.ts`
-
-#### Task 8: Remove branding leftovers
-- **Goal:** Rename remaining `aislop` references to `raigal`, except deliberate legacy reads.
-- **Files to touch:**
-  - `src/output/sarif.ts` (`tool.driver.name` -> `raigal`, help URLs)
-  - `tools/jb/aislop.DotSettings` -> `tools/jb/raigal.DotSettings`, update `package.json` and `src/utils/tooling.ts`
-  - `src/hooks/feedback.ts` (schema `raigal.hook.v1`)
-  - `src/hooks/install/*`, `src/hooks/adapters/*` (markers `raigal.mdc`, `RAIGAL.md`, `<!-- raigal:begin v1 -->`, `__raigal.hash`)
-  - Hook migration logic (detect and clean/upgrade old `aislop` installs)
-  - Temp paths: replace predictable temp names with `fs.mkdtemp(path.join(os.tmpdir(), "raigal-"))`
-  - `scripts/check-branding.mjs` (branding allowlist guard)
-  - Keep deliberate legacy reads: `.aislop/`, `.aislopignore`, `aislop-ignore-*`, `AISLOP_NO_TELEMETRY`
-  - Preserve LICENSE, THIRD_PARTY_NOTICES.md, and upstream copyright headers unchanged
-  - `tests/branding.test.ts`
-
-#### Task 9: MCP tool names and architecture examples
-- **Goal:** Exactly 4 MCP tools; verified `raigal_why` doc links; correct architecture rule keys.
-- **Files to touch:**
-  - `src/mcp.ts` (register only `raigal_scan`, `raigal_fix`, `raigal_why`, `raigal_baseline`)
-  - `src/mcp/tools.ts` (remove `aislop_*` aliases; verify doc link builder with configurable base URL)
-  - `examples/architecture-rules.yml` (replace `module:` with `match:` and `forbid:`)
-  - `tests/mcp-tools.test.ts`, `tests/architecture-examples.test.ts`
-
-#### Task 10: Make the report honest
-- **Goal:** Complete `docs/security-model.md` and align docs/README.
-- **Files to touch:**
-  - `docs/security-model.md` (sections: secret handling, telemetry, temp files, repository code execution table)
-  - `README.md`, `docs/commands.md` (update scan exit codes, config errors, rule IDs)
+| File | Line(s) | Description |
+|---|---|---|
+| `raigal-cloud/web/src/utils/findingTransformer.ts` | 11-159 | `RULE_CATALOG` object containing hardcoded static `title`, `description`, `threatModel`, `rationale`, and `cveOrCwe` across 18 rules |
+| `raigal-cloud/web/src/utils/findingTransformer.ts` | 178-181 | Fallback generic threat model: `isError ? "Potential security risk or runtime failure requiring prompt remediation." : "Code maintainability and readability degradation flagged by static analysis."` |
+| `raigal-cloud/web/src/utils/findingTransformer.ts` | 184-210 | Fabricated code snippet comments: `// ${finding.path}:${Math.max(1, finding.line - 2)}`, `// Line ${finding.line}: Flagged by ${finding.rule_id}` |
+| `raigal-cloud/web/src/data/mockBoardData.ts` | 18, 32, 46, 61, 84, 98, 112, 127 | Hardcoded static threat model and CWE paragraphs embedded in mock fixtures |
 
 ---
 
-### Phase P3: Untrusted Mode (Task 11)
-- **Goal:** Audit code execution via `RAIGAL_EXEC_MARKER`, add `--untrusted` flag and `RAIGAL_UNTRUSTED=1`.
-- **Files to touch:**
-  - Audit fixtures in `tests/fixtures/exec-audit/` (Knip JS/TS, RuboCop require, .php-cs-fixer.php, Cargo build.rs, Expo app.config.js, C# project evaluation)
-  - `src/engines/orchestrator.ts`, `src/cli-scan.ts`, `src/commands/scan.ts`, `src/commands/fix.ts`
-  - Skip unsafe engines in untrusted mode and output notice of skipped tools
-  - Document results in `docs/security-model.md`
-  - `tests/untrusted-mode.test.ts`
+### 4. URLs Built with `github.com`
+
+| File | Line(s) | URL Construction |
+|---|---|---|
+| `raigal-cloud/src/server/routes/v1-runs.ts` | 242 | `const runUrl = (ciObj.run_url as string) \|\| (repo.slug ? \`https://github.com/${repo.slug}/pull/${prNum}\` : undefined);` where `prNum` fell back to `100 + i` (loop index) |
+| `raigal-cloud/web/src/components/drawers/PullRequestDrawer.tsx` | 221 | `href={pr.run_url \|\| \`https://github.com/meethiu/raigal/pull/${pr.pr_number}\`}` (hardcoded repo slug `meethiu/raigal`) |
+| `raigal-cloud/web/src/components/drawers/AgentDetailsDrawer.tsx` | 186 | `href={\`https://github.com/meethiu/raigal/pull/${agentPr.pr_number}\`}` (hardcoded repo slug `meethiu/raigal`) |
+| `raigal-cloud/src/server/lib/github-sync.ts` | 86 | `https://api.github.com/user/orgs` (GitHub API client) |
+| `raigal-main/src/cloud/context.ts` | 129, 137 | `process.env.GITHUB_SERVER_URL \|\| "https://github.com"`, `${serverUrl}/${repo}/actions/runs/${runId}` |
 
 ---
 
-## 3. Decisions & Open Questions
+### 5. Confirmation & Mapping of the 6 Reported Symptoms
 
-- **Exit code 2:** Verified that exit code 2 is completely unused across the codebase. Approved for config errors in scan, ci, fix, and hook runtime.
-- **Hook runtime config error:** Host tools exit 0 with a one-line warning so host IDEs/git commits are never broken by typos.
-- **Hook schema version:** `raigal.hook.v1` adopted as decided.
-- **MCP server tools:** Exposes exactly 4 tools (`raigal_scan`, `raigal_fix`, `raigal_why`, `raigal_baseline`).
-- **Dependencies:** No new external npm dependencies required. Node built-ins (`node:crypto`, `node:path`, `node:fs`, `node:os`) and existing packages (`zod/v4`, `yaml`, `micromatch`) are sufficient.
+1. **Warning/error counts on the board don't add up:**
+   - Cause: `raigal-cloud/src/server/routes/v1-runs.ts` (L174-190) queried findings across historical runs capped at 500 without isolating the single latest run for the selected branch.
+2. **Board mixes findings from multiple branches:**
+   - Cause: Ingestion and aggregation lacked branch-scoped queries (`?branch=...`). Filtering was done client-side over an arbitrarily truncated multi-branch array.
+3. **Every `raigal ci` run on the same PR creates a new PR card:**
+   - Cause: There was no `pull_requests` table. PR cards were generated at read time by iterating over historical runs; each run generated a separate card with `prNum = 100 + i`.
+4. **GitHub PR link goes to the wrong place:**
+   - Cause: `v1-runs.ts` (L234, L242) invented `prNum = 100 + i` when git PR was absent or defaulted, and `PullRequestDrawer.tsx` (L221) / `AgentDetailsDrawer.tsx` (L186) hardcoded `meethiu/raigal`.
+5. **Cards contain generic boilerplate text:**
+   - Cause: `Finding` schema omitted `message`, forcing `findingTransformer.ts` to substitute static catalog blurbs and fake comment lines instead of deterministic rule output.
+6. **Agent PR cards show fabricated data:**
+   - Cause: `v1-runs.ts` (L285-312) invented model names (`Claude 3.5 Sonnet`), scores (`score - 35`), fake MicroVM logs, and fake diffs because the CLI was not recording agent telemetry into `Run`.
+
+---
+
+## Architecture & Implementation Blueprint
+
+### Phase 1: CLI (`raigal-main`) Telemetry & Contract
+1. Extend `Finding` schema in `src/cloud/contract.ts` to include `message: z.string().max(500)`.
+2. Extract pure rule message formatter `(rule, matchContext) => string` used by both terminal output and cloud ingest. Enforce secret rules (`redactSource: true` / `isSecretClassRule`) unconditionally format to `FIXED_SECRET_DIAGNOSTIC_MESSAGE`.
+3. Add `agent_telemetry` to `Run` contract:
+   - `provider: z.string().max(80)` (the actual provider selected)
+   - `before_score: z.number().nullable()`
+   - `after_score: z.number().nullable()`
+   - `pr_url: z.string().url().optional()`
+   - `patch_diff: z.string().optional()`
+4. Capture `git.pr_number` accurately from `GITHUB_EVENT_PATH` and git diff stats against `base_ref`.
+5. Add command `report-pr-closed` (or flag) for minimal closed-event pinging.
+
+### Phase 2: Cloud Backend (`raigal-cloud`)
+1. Create `pull_requests` table in `src/db/schema.ts`:
+   - `id`: uuid PK
+   - `orgId`: varchar references orgs.id
+   - `repoId`: uuid references repos.id
+   - `prNumber`: integer
+   - `title`: varchar
+   - `author`: varchar
+   - `branch`: varchar
+   - `targetBranch`: varchar
+   - `status`: varchar ("open" | "closed" | "merged")
+   - `score`: integer
+   - `passed`: boolean
+   - `blockersCount`: integer
+   - `runUrl`: varchar
+   - `diffSummary`: jsonb
+   - `diffPreview`: text
+   - `blockingIssues`: jsonb
+   - `isAgent`: boolean
+   - `agentProvider`: varchar
+   - `beforeScore`: integer
+   - `afterScore`: integer
+   - `patchDiff`: text
+   - `latestRunId`: uuid references runs.runId
+   - `startedAt`: timestamp
+   - `closedAt`: timestamp
+   - `updatedAt`: timestamp
+   - Unique index on `(org_id, repo_id, pr_number)`
+2. In `POST /v1/runs`:
+   - Upsert into `pull_requests` using guarded SQL: `ON CONFLICT (org_id, repo_id, pr_number) DO UPDATE ... WHERE excluded.started_at >= pull_requests.started_at`.
+   - Maintain latest run per branch in `branch_latest_runs` table/view.
+   - Cleanly replace findings for that specific `(repo_id, branch)` from the single latest run.
+3. Add `POST /v1/pr-events`:
+   - Handles `{ repo, pr_number, event: "closed", merged: boolean }` and updates existing row.
+4. Rewrite `GET /v1/runs/repos/:repoId`:
+   - Accepts `?branch=...` parameter.
+   - Returns findings strictly from the latest completed run for that branch.
+   - Returns `pull_requests` directly from the `pull_requests` table.
+   - Returns no fabricated data; `null` if telemetry was not recorded.
+
+### Phase 3: Web Dashboard (`raigal-cloud/web`)
+1. Purge `mockBoardData.ts` imports from all production code paths.
+2. Refactor state into URL parameters:
+   - Route path: `/repos/:repoId` (with fallback to query params `?repo=...`).
+   - Query params: `?branch=...&drawer=...&item=...`.
+   - Sync with `window.history.pushState` on selection; restore state from URL on mount/popstate.
+3. `findingTransformer.ts`: Render `finding.message` directly as authoritative rule-authored text.
+4. `PullRequestCard.tsx` / `PullRequestDrawer.tsx`:
+   - Build GitHub link strictly using helper `buildPrUrl(repo.slug, pr.pr_number)`.
+   - Show relative data age ("Updated 2m ago") and staleness warning (>14d).
+   - Show closed/merged badges.
+5. `AgentRemediationCard.tsx` / `AgentDetailsDrawer.tsx`:
+   - Render real `agentProvider` (or "Provider not recorded", never default to Claude).
+   - Render real `after_score - before_score`.
+6. Replace sidebar mock support tickets with live top rule violations / active engine breakdown.
+7. Wire `TopNav` sorting (`severity`, `recent` using actual run timestamp, `rule_id`) into vulnerability lists.
+8. Device approval: Show explicit message when account has no organization.

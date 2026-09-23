@@ -98,6 +98,7 @@ describe("CloudRunRecorder and telemetry --show", () => {
 					line: 10,
 					severity: "warning",
 					fingerprint: "11112222333344445555666677778888",
+					message: "Trivial comment re-explaining code",
 				},
 			],
 		});
