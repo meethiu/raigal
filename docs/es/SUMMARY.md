@@ -23,9 +23,11 @@
 ## Automatización y CI/CD
 
 * [Pipelines de CI/CD y GitHub Actions](automatizacion/ci-cd.md)
+* [Puerta de Enlace de PRs y Kanban](automatizacion/pull-requests.md)
 * [Reparación Automatizada con Agentes](automatizacion/reparacion-agentes.md)
 
 ## Plataforma Cloud
 
 * [Arquitectura de Raigal Cloud](plataforma-cloud/arquitectura.md)
+* [Tablero Kanban y Telemetría](plataforma-cloud/tablero.md)
 * [API de Administración y Licenciamiento](plataforma-cloud/api-admin.md)

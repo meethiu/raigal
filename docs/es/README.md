@@ -55,9 +55,19 @@ Raigal protege su base de código en el hook local del desarrollador, en la revi
       <td><a href="referencia-cli/hooks.md">Configurar Hooks</a></td>
     </tr>
     <tr>
-      <td><strong>Plataforma Cloud y Licenciamiento</strong></td>
-      <td>Panel de control, autenticación Clerk y verificación criptográfica Ed25519 offline.</td>
-      <td><a href="plataforma-cloud/arquitectura.md">Arquitectura Cloud</a></td>
+      <td><strong>Reparación y PRs con Agentes</strong></td>
+      <td>Git worktrees aislados con creación automática de ramas, commits y Pull Requests.</td>
+      <td><a href="automatizacion/reparacion-agentes.md">Reparación con Agentes</a></td>
+    </tr>
+    <tr>
+      <td><strong>Tablero Kanban y Telemetría</strong></td>
+      <td>Panel de triaje en 4 columnas con paneles laterales de inspección y cero fugas de estado.</td>
+      <td><a href="plataforma-cloud/tablero.md">Tablero Kanban</a></td>
+    </tr>
+    <tr>
+      <td><strong>Seguridad Empresarial y OIDC</strong></td>
+      <td>Autenticación OIDC de GitHub sin secretos estáticos y concesiones criptográficas Ed25519.</td>
+      <td><a href="conceptos-clave/seguridad.md">Modelo de Seguridad</a></td>
     </tr>
   </tbody>
 </table>
@@ -78,8 +88,14 @@ Ejecute `raigal scan .` para obtener una puntuación inmediata y el desglose de 
 {% endstep %}
 
 {% step %}
-### Integrar en CI/CD y Cloud
-Añada la puerta de calidad a GitHub Actions o su sistema de CI preferido.
+### Iniciar Reparaciones Autónomas
+Ejecute `raigal agent --provider opencode --pr` para solucionar hallazgos en un worktree y abrir un PR.
+[Reparación Automatizada con Agentes](automatizacion/reparacion-agentes.md)
+{% endstep %}
+
+{% step %}
+### Integrar en CI/CD y Tablero Kanban
+Añada la puerta de calidad a GitHub Actions y supervise el estado del repositorio en Raigal Cloud.
 [Configuración de CI/CD](automatizacion/ci-cd.md)
 {% endstep %}
 {% endstepper %}

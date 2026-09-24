@@ -55,9 +55,19 @@ Raigal guards your codebase at the local developer hook, in PR reviews, and acro
       <td><a href="cli-reference/hooks.md">Configure Hooks</a></td>
     </tr>
     <tr>
-      <td><strong>Cloud Platform & Licensing</strong></td>
-      <td>Enterprise dashboard, Clerk auth, and Ed25519 offline license verification.</td>
-      <td><a href="cloud-platform/architecture.md">Cloud Architecture</a></td>
+      <td><strong>Autonomous Agent Repairs & PRs</strong></td>
+      <td>Isolated git worktrees with automated branch, commit, and Pull Request creation.</td>
+      <td><a href="automation/agent-repairs.md">Agent Repairs</a></td>
+    </tr>
+    <tr>
+      <td><strong>Remediation Kanban & Telemetry</strong></td>
+      <td>4-stage cloud triage dashboard with slide-over drawers and zero state leakage.</td>
+      <td><a href="cloud-platform/dashboard.md">Remediation Kanban</a></td>
+    </tr>
+    <tr>
+      <td><strong>Enterprise Security & OIDC</strong></td>
+      <td>Zero-secret GitHub OIDC authentication and Ed25519 cryptographic offline leases.</td>
+      <td><a href="core-concepts/security.md">Security Model</a></td>
     </tr>
   </tbody>
 </table>
@@ -78,8 +88,14 @@ Execute `raigal scan .` to get an immediate health score and breakdown of findin
 {% endstep %}
 
 {% step %}
-### Connect to CI/CD & Cloud
-Add the quality gate to GitHub Actions or your preferred CI runner.
+### Launch Autonomous Repairs
+Run `raigal agent --provider opencode --pr` to repair findings in a git worktree and publish a PR.
+[Automated Agent Repairs](automation/agent-repairs.md)
+{% endstep %}
+
+{% step %}
+### Connect to CI/CD & Remediation Kanban
+Add the quality gate to GitHub Actions and monitor repository health on Raigal Cloud.
 [CI/CD Setup](automation/ci-cd.md)
 {% endstep %}
 {% endstepper %}

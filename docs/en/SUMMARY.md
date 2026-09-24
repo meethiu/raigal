@@ -23,9 +23,11 @@
 ## Automation & CI/CD
 
 * [CI/CD Pipelines & GitHub Actions](automation/ci-cd.md)
+* [Pull Request Gate & Kanban](automation/pull-requests.md)
 * [Automated Agent Repairs](automation/agent-repairs.md)
 
 ## Cloud Platform
 
 * [Raigal Cloud Architecture](cloud-platform/architecture.md)
+* [Remediation Kanban & Telemetry](cloud-platform/dashboard.md)
 * [Admin API & Licensing](cloud-platform/admin-api.md)

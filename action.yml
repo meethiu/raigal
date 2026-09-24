@@ -22,6 +22,12 @@ inputs:
     description: npm raigal CLI version to run (e.g. "1.0.1"). Defaults to the latest published release. This is separate from the GitHub Action ref in uses:.
     required: false
     default: "latest"
+  token:
+    description: Raigal token (starts with rgl_live_...). Can also be provided via RAIGAL_TOKEN environment variable.
+    required: false
+  api-url:
+    description: Raigal Cloud API base URL. Can also be provided via RAIGAL_API_URL environment variable.
+    required: false
 
 runs:
   using: composite
@@ -37,7 +43,8 @@ runs:
         RAIGAL_FORMAT: ${{ inputs.format }}
         RAIGAL_VERSION: ${{ inputs.version }}
         RAIGAL_DIR: ${{ inputs.directory }}
-        RAIGAL_TOKEN: ${{ env.RAIGAL_TOKEN }}
+        RAIGAL_TOKEN: ${{ inputs.token || env.RAIGAL_TOKEN }}
+        RAIGAL_API_URL: ${{ inputs.api-url || env.RAIGAL_API_URL }}
       run: |
         scan_dir="$RAIGAL_DIR"
         if [[ "$scan_dir" != /* ]]; then

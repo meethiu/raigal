@@ -175,8 +175,17 @@ export const detectGitContext = (directory: string): GitContextResult => {
 		prNumber = pr.number;
 	} else if (typeof eventPayload?.number === "number") {
 		prNumber = eventPayload.number;
+	} else if (process.env.RAIGAL_PR_NUMBER || process.env.PR_NUMBER) {
+		const parsed = Number.parseInt(process.env.RAIGAL_PR_NUMBER || process.env.PR_NUMBER || "", 10);
+		if (!Number.isNaN(parsed) && parsed > 0) prNumber = parsed;
 	} else if (process.env.GITHUB_REF) {
-		const match = process.env.GITHUB_REF.match(/^refs\/pull\/(\d+)\//);
+		const match = process.env.GITHUB_REF.match(/refs\/pull\/(\d+)(?:\/|$)/);
+		if (match && match[1]) {
+			prNumber = Number.parseInt(match[1], 10);
+		}
+	}
+	if (!prNumber && branch) {
+		const match = branch.match(/pull\/(\d+)/i) || branch.match(/^pr-(\d+)/i);
 		if (match && match[1]) {
 			prNumber = Number.parseInt(match[1], 10);
 		}
