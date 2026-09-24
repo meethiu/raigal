@@ -1,6 +1,0 @@
-# GitBook site-wide configuration
-spaces:
-  en:
-    path: docs/en
-  es:
-    path: docs/es
