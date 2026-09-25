@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 const PROVIDER_PROBE_TIMEOUT_MS = 1200;
@@ -60,8 +62,48 @@ export const PROVIDERS: AgentProvider[] = [
 
 export const providerIds = (): AgentProviderId[] => PROVIDERS.map((provider) => provider.id);
 
+const isExecutableFile = (filePath: string): boolean => {
+	try {
+		const stats = fs.statSync(filePath);
+		if (!stats.isFile()) return false;
+		if (process.platform === "win32") {
+			const ext = path.extname(filePath).toLowerCase();
+			const pathext = (process.env.PATHEXT || ".COM;.EXE;.BAT;.CMD").toLowerCase().split(";");
+			return ext ? pathext.includes(ext) : true;
+		}
+		return (stats.mode & 0o111) !== 0;
+	} catch {
+		return false;
+	}
+};
+
 const commandExists = (bin: string): boolean => {
-	const command = process.platform === "win32" ? "where" : "which";
+	// If an absolute or relative path is provided, check the filesystem directly.
+	if (path.isAbsolute(bin) || bin.includes("/") || bin.includes("\\")) {
+		if (isExecutableFile(bin)) return true;
+		if (process.platform === "win32") {
+			const pathext = (process.env.PATHEXT || ".COM;.EXE;.BAT;.CMD").split(";");
+			for (const ext of pathext) {
+				if (ext && isExecutableFile(bin + ext)) return true;
+			}
+		}
+		return false;
+	}
+
+	// For bare command names on Windows, check PATH entries directly
+	if (process.platform === "win32") {
+		const pathValue = process.env.PATH ?? "";
+		const pathext = (process.env.PATHEXT || ".COM;.EXE;.BAT;.CMD").toLowerCase().split(";");
+		for (const dir of pathValue.split(path.delimiter)) {
+			if (!dir) continue;
+			for (const ext of pathext) {
+				const candidate = path.join(dir, bin + ext);
+				if (isExecutableFile(candidate)) return true;
+			}
+		}
+	}
+
+	const command = process.platform === "win32" ? "where.exe" : "which";
 	const result = spawnSync(command, [bin], {
 		encoding: "utf-8",
 		timeout: PROVIDER_PROBE_TIMEOUT_MS,
