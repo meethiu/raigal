@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { beforeEach } from "vitest";
 import {
 	registerPublicKeyForTests,
 } from "../src/cloud/keys.js";
@@ -17,9 +18,11 @@ registerPublicKeyForTests(TEST_KID, TEST_PUBLIC_KEY_PEM);
 process.env.RAIGAL_KEY_ID = TEST_KID;
 process.env.RAIGAL_PUBLIC_KEY = TEST_PUBLIC_KEY_PEM;
 
-// Prevent CI runner OIDC tokens from leaking into unit tests testing unauthenticated behavior
+// Prevent host environment tokens and repo configs from leaking into unit tests
 delete process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
 delete process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+delete process.env.RAIGAL_TOKEN;
+delete process.env.GITHUB_REPOSITORY;
 
 // Create a stable test config directory with session credentials and cached entitlement
 const testConfigDir = path.join(os.tmpdir(), "raigal-vitest-global-config");
@@ -68,6 +71,10 @@ fs.writeFileSync(
 	{ mode: 0o600 },
 );
 
-if (!process.env.RAIGAL_CONFIG_DIR) {
+process.env.RAIGAL_CONFIG_DIR = testConfigDir;
+
+beforeEach(() => {
 	process.env.RAIGAL_CONFIG_DIR = testConfigDir;
-}
+	delete process.env.RAIGAL_TOKEN;
+	delete process.env.GITHUB_REPOSITORY;
+});
