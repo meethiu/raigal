@@ -39,13 +39,18 @@ const safeTelemetryConfig = (dir: string) => {
 // Reap any scanner still running before exiting: on POSIX the tools are spawned
 // in their own process groups, so a Ctrl-C to the CLI's group would otherwise
 // leave them orphaned (win32 children share the console and get Ctrl-C anyway).
-const handleTerminationSignal = async (): Promise<void> => {
+const handleTerminationSignal = async (signal: "SIGINT" | "SIGTERM"): Promise<void> => {
 	killActiveChildren();
-	await finishActiveRecorder(130);
-	process.exit(0);
+	const exitCode = signal === "SIGINT" ? 130 : 143;
+	await finishActiveRecorder(exitCode);
+	process.exit(exitCode);
 };
-process.on("SIGINT", handleTerminationSignal);
-process.on("SIGTERM", handleTerminationSignal);
+process.on("SIGINT", () => {
+	void handleTerminationSignal("SIGINT");
+});
+process.on("SIGTERM", () => {
+	void handleTerminationSignal("SIGTERM");
+});
 
 const fireInstalledOnce = (): void => {
 	if (isTelemetryDisabled(safeTelemetryConfig(process.cwd()))) return;

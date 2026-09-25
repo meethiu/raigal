@@ -80,6 +80,16 @@ const runRaigal = async (request: RaigalRunRequest): Promise<RaigalRunResult> =>
 			stdio: "inherit",
 		});
 
+		child.on("error", () => {
+			resolve({
+				command: request.bin,
+				args: request.args,
+				exitCode: 1,
+				signal: null,
+				skipped: false,
+			});
+		});
+
 		child.on("close", (exitCode, signal) => {
 			resolve({
 				command: request.bin,

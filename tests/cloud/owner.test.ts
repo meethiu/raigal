@@ -94,4 +94,44 @@ describe("repository owner allowlist check", () => {
 		expect(result.allowed).toBe(false);
 		expect(result.reason).toContain("Non-GitHub CI environments are unsupported");
 	});
+
+	it("parses both standard scp-like and RFC 3986 ssh:// remote URLs", async () => {
+		const { parseGitRemote } = await import("../../src/cloud/owner.js");
+
+		const scpSsh = parseGitRemote("git@github.com:acme-corp/my-project.git");
+		expect(scpSsh).toEqual({
+			owner: "acme-corp",
+			repo: "my-project",
+			hasRemote: true,
+			isGitHubRemote: true,
+		});
+
+		const rfcSsh = parseGitRemote("ssh://git@github.com/acme-corp/my-project.git");
+		expect(rfcSsh).toEqual({
+			owner: "acme-corp",
+			repo: "my-project",
+			hasRemote: true,
+			isGitHubRemote: true,
+		});
+
+		const rfcPortSsh = parseGitRemote("ssh://git@github.com:22/acme-corp/my-project.git");
+		expect(rfcPortSsh).toEqual({
+			owner: "acme-corp",
+			repo: "my-project",
+			hasRemote: true,
+			isGitHubRemote: true,
+		});
+
+		const httpsUrl = parseGitRemote("https://github.com/acme-corp/my-project");
+		expect(httpsUrl).toEqual({
+			owner: "acme-corp",
+			repo: "my-project",
+			hasRemote: true,
+			isGitHubRemote: true,
+		});
+
+		const nonGitHub = parseGitRemote("git@gitlab.com:acme-corp/my-project.git");
+		expect(nonGitHub.isGitHubRemote).toBe(false);
+	});
 });
+

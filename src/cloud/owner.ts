@@ -3,8 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import type { AllowedOwnerType } from "./types.js";
 
-const GITHUB_REMOTE_RE =
-	/^(?:git@github\.com:|https:\/\/(?:[^@]+@)?github\.com\/)([^/]+)\/([^/.\s]+?)(?:\.git)?\s*$/;
+export const GITHUB_REMOTE_RE =
+	/^(?:(?:git@|ssh:\/\/(?:git@)?)github\.com(?::(?:\d+\/)?|[:/])|https:\/\/(?:[^@]+@)?github\.com\/)([^/]+)\/([^/.\s]+?)(?:\.git)?\s*$/;
 
 export interface DetectedRepoOwner {
 	owner: string | null;
@@ -13,7 +13,7 @@ export interface DetectedRepoOwner {
 	isGitHubRemote: boolean;
 }
 
-const parseGitRemote = (rawUrl: string | null): DetectedRepoOwner => {
+export const parseGitRemote = (rawUrl: string | null): DetectedRepoOwner => {
 	if (!rawUrl) {
 		return {
 			owner: null,
